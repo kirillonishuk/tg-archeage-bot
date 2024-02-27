@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "baseUrl": "src",
+    "paths": {
+      "@configs/*": ["configs/*"],
+      "@parser/*": ["parser/*"],
+      "@models/*": ["models/*"],
+      "@store/*": ["store/*"],
+      "@utils/*": ["utils/*"],
+      "@interfaces/*": ["interfaces/*"],
+      "@services/*": ["services/*"],
+      "@bot/*": ["bot/*"],
+      "@i18n/*": ["i18n/*"],
+      "*": ["node_modules/*", "types/*"]
+    },
+    "target": "ES2016",
+    "module": "commonjs",
+    "typeRoots": ["./node_modules/@types", "./env.d.ts"],
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "strict": true,
+    "lib": ["ES2016"],
+    "skipLibCheck": true,
+    "moduleResolution": "Node",
+    "sourceMap": true,
+    "outDir": "dist"
+  },
+  "include": ["src/**/*", "env.d.ts", "src/locales/*.json"]
+}
