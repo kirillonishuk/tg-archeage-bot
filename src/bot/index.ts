@@ -1,42 +1,44 @@
-import { Telegraf, session } from 'telegraf';
-import { SceneContext, Stage } from 'telegraf/scenes';
+import { Telegraf, session } from "telegraf";
+import { type SceneContext, Stage } from "telegraf/scenes";
 
-import mainScene from './scenes/main';
-import subSrverScene from './scenes/sub-server';
-import unsubScene from './scenes/unsub';
-import { getMainKeyboard } from './keyboards';
-import i18n from '@i18n/i18n';
+import subServerScene from "./scenes/sub-server";
+import subGuildScene from "./scenes/sub-guild";
+import unsubScene from "./scenes/unsub";
+import { leaveToMainScene } from "./helpers";
+import { getMainKeyboard } from "./keyboards";
+import i18n from "@i18n/i18n";
 
-import { BOT_TOKEN } from '@configs/index';
+import { BOT_TOKEN } from "@configs/index";
 
-const bot = new Telegraf<SceneContext>(BOT_TOKEN || '');
+const bot = new Telegraf<SceneContext>(BOT_TOKEN);
 
 const stage = new Stage<SceneContext>([
-  mainScene,
-  subSrverScene,
+  subServerScene,
+  subGuildScene,
   unsubScene,
 ]);
 bot.use(session());
 bot.use(stage.middleware());
 
 bot.hears(/(.*Подписаться на сервер)/, async (ctx: SceneContext) => {
-  await ctx.scene.enter('sub-server');
+  await ctx.scene.enter("sub-server");
+});
+bot.hears(/(.*Подписаться на гильдию)/, async (ctx: SceneContext) => {
+  await ctx.scene.enter("sub-guild");
 });
 bot.hears(/(.*Отписаться от уведомлений)/, async (ctx: SceneContext) => {
-  await ctx.scene.enter('unsub');
+  await ctx.scene.enter("unsub");
 });
-bot.hears(/(.*Назад)/, async (ctx: SceneContext) => {
-  const { mainKeyboard } = getMainKeyboard(ctx);
-
-  await ctx.reply(i18n.t('other.default_handler'), mainKeyboard);
-});
+bot.action(/go_to_menu/, leaveToMainScene);
 bot.hears(/(.*?)/, async (ctx: SceneContext) => {
   const { mainKeyboard } = getMainKeyboard(ctx);
-  await ctx.reply(i18n.t('other.default_handler'), mainKeyboard);
+  await ctx.reply(i18n.t("other.default_handler"), mainKeyboard);
 });
 
 bot.catch((error: any) => {
-  console.error('Global error has happened', error);
+  console.error("Global error has happened", error);
 });
 
-bot.launch();
+export async function launchBot(): Promise<void> {
+  await bot.launch();
+}

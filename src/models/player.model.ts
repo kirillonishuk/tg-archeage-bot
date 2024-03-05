@@ -1,12 +1,12 @@
-import { Schema, model, Document } from 'mongoose';
-import { Player } from '@interfaces/player.interface';
+import { Schema, model, type Document } from "mongoose";
+import { type Player } from "@interfaces/player.interface";
 
-import { FRACTION_NAME_CODES, SERVER_NAME_CODES } from '@configs/archeage';
+import { FRACTION_NAME_CODES, SERVER_NAME_CODES } from "@configs/archeage";
 
 const PlayerSchema = new Schema({
   num: {
     type: Number,
-    required: true
+    required: true,
   },
   name: {
     type: String,
@@ -14,22 +14,22 @@ const PlayerSchema = new Schema({
   },
   guild: {
     type: String,
-    required: false
+    required: false,
   },
   score: {
     type: String,
-    required: true
+    required: true,
   },
   fraction: {
     type: String,
-    enum: FRACTION_NAME_CODES
+    enum: FRACTION_NAME_CODES,
   },
   server: {
     type: String,
-    enum: SERVER_NAME_CODES
-  }
+    enum: SERVER_NAME_CODES,
+  },
 });
 
-const playerModel = model<Player & Document>('Player', PlayerSchema);
+const playerModel = model<Player & Document>("Player", PlayerSchema);
 
 export default playerModel;

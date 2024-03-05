@@ -1,35 +1,48 @@
-import fetch from 'node-fetch';
-import moment from 'moment';
+import fetch from "node-fetch";
+import moment from "moment";
 
-import { URLPlayerListResponse, GamePlayerList, ServerPlayerList } from '@interfaces/archeage.interface';
+import {
+  type URLPlayerListResponse,
+  type GamePlayerList,
+  type ServerPlayerList,
+} from "@interfaces/archeage.interface";
 
-import { deletePlayers, findPlayersByServer, saveNewPlayers, savePlayers, updatePlayers } from '@services/player.service';
-import { saveHistory } from '@services/history.service';
-import { compareCharacters, splitCandidatesByFractions } from '@utils/compare';
-import { prettyText } from '@utils/pretty';
-import { processError } from '@utils/error';
+import {
+  deletePlayers,
+  findPlayersByServer,
+  saveNewPlayers,
+  savePlayers,
+  updatePlayers,
+} from "@services/player.service";
+import { saveHistory } from "@services/history.service";
+import { compareCharacters, splitCandidatesByFractions } from "@utils/compare";
+import { prettyText } from "@utils/pretty";
+import { processError } from "@utils/error";
 
-import { SERVER_NAMES, URL_PLAYER_LIST, FRACTION_NAME_CODES } from '@configs/archeage';
+import {
+  SERVER_NAMES,
+  URL_PLAYER_LIST,
+  FRACTION_NAME_CODES,
+} from "@configs/archeage";
 
-export const processPlayers = async () => {
-  console.log('Started process data:', moment().format('HH:mm:ss MM.DD.YY'));
+export const processPlayers = async (): Promise<void> => {
+  console.log("Started process data:", moment().format("HH:mm:ss MM.DD.YY"));
   const candidates = await fetchPlayers();
 
-  if (candidates && typeof candidates !== 'string') {
+  if (candidates !== undefined && typeof candidates !== "string") {
     let server: keyof GamePlayerList;
     for (server in candidates) {
-      await parseCandidates(server, candidates[server])
+      await parseCandidates(server, candidates[server]);
     }
   }
-
 };
 
-const fetchPlayers = async () => {
+const fetchPlayers = async (): Promise<GamePlayerList | string | undefined> => {
   try {
     const response = await fetch(URL_PLAYER_LIST, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        Accept: 'application/json',
+        Accept: "application/json",
       },
     });
 
@@ -49,20 +62,36 @@ const fetchPlayers = async () => {
   }
 };
 
-const parseCandidates = async (server: keyof GamePlayerList, candidates: ServerPlayerList) => {
+const parseCandidates = async (
+  server: keyof GamePlayerList,
+  candidates: ServerPlayerList,
+): Promise<void> => {
   try {
     const serverCandidates = await findPlayersByServer(server);
 
-    if (serverCandidates && serverCandidates.length !== 0) {
-      console.log('-------- UPDATING --------');
+    if (serverCandidates.length !== 0) {
+      console.log("-------- UPDATING --------");
       console.log(`-------- SERVER ${SERVER_NAMES[server]} --------`);
-      
-      let [pirates, west, east] = splitCandidatesByFractions(candidates);
-      pirates = pirates.map(player => ({ ...player, fraction: FRACTION_NAME_CODES.Pirates, server }));
-      west = west.map(player => ({ ...player, fraction: FRACTION_NAME_CODES.West, server }));
-      east = east.map(player => ({ ...player, fraction: FRACTION_NAME_CODES.East, server }));
 
-      let [newPlayers, disappearedPlayers, changedPlayers, history] = compareCharacters(serverCandidates, pirates.concat(west, east));
+      let [pirates, west, east] = splitCandidatesByFractions(candidates);
+      pirates = pirates.map((player) => ({
+        ...player,
+        fraction: FRACTION_NAME_CODES.Pirates,
+        server,
+      }));
+      west = west.map((player) => ({
+        ...player,
+        fraction: FRACTION_NAME_CODES.West,
+        server,
+      }));
+      east = east.map((player) => ({
+        ...player,
+        fraction: FRACTION_NAME_CODES.East,
+        server,
+      }));
+
+      let [newPlayers, disappearedPlayers, changedPlayers, history] =
+        compareCharacters(serverCandidates, pirates.concat(west, east));
 
       history = prettyText(history, server);
       await saveHistory(history);
@@ -71,10 +100,9 @@ const parseCandidates = async (server: keyof GamePlayerList, candidates: ServerP
       await deletePlayers(disappearedPlayers);
       await updatePlayers(changedPlayers);
     } else {
-      console.log('-------- DB IS EMPTY --------');
+      console.log("-------- DB IS EMPTY --------");
       await savePlayers(candidates, server);
-    };
-
+    }
   } catch (error) {
     processError(error);
   }

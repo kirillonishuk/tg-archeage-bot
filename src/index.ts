@@ -1,19 +1,25 @@
-import 'module-alias/register';
+import "module-alias/register";
 
-import { connectToDatabase, closeDatabaseConnection } from './databases';
-import { processPlayers } from '@parser/index';
-import { scheduleFunction } from '@utils/schedule';
+import { connectToDatabase, closeDatabaseConnection } from "./databases";
+// import { processPlayers } from "@parser/index";
+// import { scheduleFunction } from "@utils/schedule";
 
-import '@bot';
+import { launchBot } from "@bot/index";
 
-const start = async () => {
-  await connectToDatabase();
-
-  // scheduleFunction(processPlayers)
+const start = async (): Promise<void> => {
+  try {
+    await connectToDatabase();
+    await launchBot();
+    // scheduleFunction(processPlayers)
+  } catch (error) {
+    console.log("unexpected error: ", error);
+  }
 };
 
-process.on('exit', async () => {
-  await closeDatabaseConnection();
+process.on("exit", () => {
+  closeDatabaseConnection().catch((error) => {
+    console.log("unexpected error: ", error);
+  });
 });
 
-start();
+void start();

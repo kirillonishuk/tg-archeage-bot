@@ -1,59 +1,73 @@
-import { Markup } from 'telegraf';
-import { SceneContext } from 'telegraf/scenes';
+import { Markup } from "telegraf";
+import { type SceneContext } from "telegraf/scenes";
+import { type InlineKeyboardMarkup } from "telegraf/typings/core/types/typegram";
 
-import { getBackToMenuKeyboard } from '@bot/keyboards';
-import { getUserSubscriptions, deleteSubscription, getSubscriptionById } from '@services/subscription.service';
-import i18n from '@i18n/i18n';
+import { splitArrayToMatrix } from ".";
+import { getBackToMenuKeyboard } from "@bot/keyboards";
+import {
+  getUserSubscriptions,
+  deleteSubscription,
+  getSubscriptionById,
+} from "@services/subscription.service";
+import i18n from "@i18n/i18n";
 
-import { SERVER_NAMES, BUTTON_IN_LINE } from '@configs/archeage';
+import { SERVER_NAMES } from "@configs/archeage";
 
-function splitArrayToMatrix(array: any[]): any[][] {
-  const matrix: any[][] = [];
+function getSubscriptionName(subscription: any): string {
+  return subscription.guild !== null
+    ? `${subscription.guild} - ${SERVER_NAMES[subscription.server]}`
+    : SERVER_NAMES[subscription.server];
+}
 
-  for (let i = 0; i < array.length; i += (BUTTON_IN_LINE - 1)) {
-    matrix.push(array.slice(i, i + (BUTTON_IN_LINE - 1)));
-  };
-  return matrix;
-};
-
-export async function getSubscriptionButtons(ctx: SceneContext) {
+export async function getSubscriptionButtons(
+  ctx: SceneContext,
+): Promise<Markup.Markup<InlineKeyboardMarkup> | null> {
   const userSubscriptions = await getUserSubscriptions(ctx.from?.id);
+  const { backToMenuButton } = getBackToMenuKeyboard(ctx);
 
-  if (!userSubscriptions || !userSubscriptions.length) {
-    return null
-  };
+  if (userSubscriptions === undefined || userSubscriptions?.length === 0) {
+    return null;
+  }
   return Markup.inlineKeyboard(
     splitArrayToMatrix(
-      userSubscriptions
-        .map((sub) => {
-          return Markup.button.callback(SERVER_NAMES[sub.server], `unsub_${sub._id}`)
-        }))
+      userSubscriptions.map((sub) => {
+        return Markup.button.callback(
+          getSubscriptionName(sub),
+          `unsub_${sub._id.toString()}`,
+        );
+      }),
+      backToMenuButton,
+    ),
   );
-};
+}
 
-export async function unsubscribe(ctx: SceneContext) {
-  const subscribeId = (ctx.callbackQuery && 'data' in ctx.callbackQuery) ? ctx.callbackQuery?.data : '';
-  const _id = subscribeId.replace(/unsub_/i, '');
+export async function unsubscribe(ctx: SceneContext): Promise<void> {
+  const subscribeId =
+    ctx.callbackQuery !== undefined && "data" in ctx.callbackQuery
+      ? ctx.callbackQuery?.data
+      : "";
+  const _id = subscribeId.replace(/unsub_/i, "");
   const subscription = await getSubscriptionById(_id);
-
   const { backToMenuKeyboard } = getBackToMenuKeyboard(ctx);
 
-  if (subscription) {
+  if (subscription !== null) {
     await deleteSubscription(_id);
-    const label = subscription.guild ?
-      `${i18n.t('scenes.unsub.guild')} ${subscription.guild}(${i18n.t('scenes.unsub.server')}${SERVER_NAMES[subscription.server]})`
-      : `${i18n.t('scenes.unsub.server')} ${SERVER_NAMES[subscription.server]}`;
-    await ctx.reply(i18n.t('scenes.unsub.unsubed', { info: label }));
+    const label =
+      subscription.guild !== null
+        ? `${i18n.t("scenes.unsub.guild")} ${subscription.guild}(${i18n.t("scenes.unsub.server")}${SERVER_NAMES[subscription.server]})`
+        : `${i18n.t("scenes.unsub.server")} ${SERVER_NAMES[subscription.server]}`;
+    await ctx.reply(i18n.t("scenes.unsub.unsubed", { info: label }));
 
     const subscriptionListButtons = await getSubscriptionButtons(ctx);
-    if (subscriptionListButtons) {
-      await ctx.reply(i18n.t('scenes.unsub.list_of_subs'), subscriptionListButtons);
-      await ctx.reply(i18n.t('scenes.unsub.back_info'), backToMenuKeyboard);
+    if (subscriptionListButtons !== null) {
+      await ctx.reply(
+        i18n.t("scenes.unsub.list_of_subs"),
+        subscriptionListButtons,
+      );
     } else {
-      await ctx.reply(i18n.t('scenes.unsub.empty_list'), backToMenuKeyboard);
-    };
+      await ctx.reply(i18n.t("scenes.unsub.empty_list"), backToMenuKeyboard);
+    }
   } else {
-    await ctx.reply(i18n.t('scenes.unsub.not_found'), backToMenuKeyboard);
+    await ctx.reply(i18n.t("scenes.unsub.not_found"), backToMenuKeyboard);
   }
-
-};
+}

@@ -1,69 +1,136 @@
-import { Subscription } from '@interfaces/player.interface';
-import subscriptionModel from '@models/subscription.model';
+import { type Subscription } from "@interfaces/player.interface";
+import SubscriptionModel from "@models/subscription.model";
 
-const subscription = subscriptionModel;
-
-export const createSubscribeOnServer = async (userId?: number, server?: string) => {
+export const createSubscribeOnServer = async (
+  userId?: number,
+  server?: string,
+): Promise<Subscription | string> => {
   try {
-    if (userId && server) {
-      const checkSub = await subscription.findOne({ user_id: userId, server });
-      if (checkSub) {
-        return 'alreadyExist';
-      };
-      const sub = new subscription({
+    if (userId != null && server != null) {
+      const checkSub = await SubscriptionModel.findOne({
         user_id: userId,
-        server: server,
-        createdAt: new Date()
+        server,
+        guild: null,
+      });
+      if (checkSub !== undefined) {
+        return "alreadyExist";
+      }
+      const sub = new SubscriptionModel({
+        user_id: userId,
+        server,
+        createdAt: new Date(),
       });
 
       return await sub.save();
     } else {
-      return 'invalidData';
-    };
+      return "invalidData";
+    }
   } catch (error) {
     console.log('Error in "createSubscribeOnServer"', error);
     throw error;
   }
 };
 
-export const getUserServersSubscriptions = async (userId?: number) => {
+export const createSubscribeOnGuild = async (
+  userId?: number,
+  server?: string,
+  guildName?: string,
+): Promise<Subscription | string> => {
   try {
-    if (userId) {
-      const subs = await subscription.find({ user_id: userId, guild: null });
+    if (userId != null && server != null && guildName != null) {
+      const checkSub = await SubscriptionModel.findOne({
+        user_id: userId,
+        server,
+        guild: guildName,
+      });
+      if (checkSub !== undefined) {
+        return "alreadyExist";
+      }
+      const sub = new SubscriptionModel({
+        user_id: userId,
+        server,
+        guild: guildName,
+        createdAt: new Date(),
+      });
+
+      return await sub.save();
+    } else {
+      return "invalidData";
+    }
+  } catch (error) {
+    console.log('Error in "createSubscribeOnServer"', error);
+    throw error;
+  }
+};
+
+export const getUserServersSubscriptions = async (
+  userId?: number,
+): Promise<Subscription[] | undefined> => {
+  try {
+    if (userId != null) {
+      const subs = await SubscriptionModel.find<Subscription>({
+        user_id: userId,
+        guild: null,
+      });
       return subs;
-    };
+    }
   } catch (error) {
     console.log('Error in "getUserServersSubscriptions"', error);
     throw error;
-  };
+  }
 };
 
-export const getUserSubscriptions = async (userId?: number) => {
+export const getUserSubscriptions = async (
+  userId?: number,
+): Promise<Subscription[] | undefined> => {
   try {
-    if (userId) {
-      const subs = await subscription.find({ user_id: userId })
-      return subs
-    };
+    if (userId != null) {
+      const subs = await SubscriptionModel.find<Subscription>({
+        user_id: userId,
+      });
+      return subs;
+    }
   } catch (error) {
     console.log('Error in "getUserSubscriptions"', error);
     throw error;
-  };
+  }
 };
 
-export const getSubscriptionById = async (subId?: string) => {
+export const getSubscriptionById = async (
+  subscriptionId?: string,
+): Promise<Subscription | undefined> => {
   try {
-    return await subscription.findOne({ _id: subId });
+    return await SubscriptionModel.findOne({ _id: subscriptionId });
   } catch (error) {
     console.log('Error in "getSubscriptionById"', error);
     throw error;
-  };
+  }
 };
 
-export const deleteSubscription = async (subId: string) => {
+export const deleteSubscription = async (
+  subscriptionId: string,
+): Promise<any> => {
   try {
-    return await subscription.deleteOne({ _id: subId });
+    return await SubscriptionModel.deleteOne({ _id: subscriptionId });
   } catch (error) {
     console.log('Error in "deleteSubscription"', error);
     throw error;
-  };
+  }
+};
+
+export const muteSubscription = async (
+  subscriptionId?: string,
+): Promise<Subscription | null | undefined> => {
+  try {
+    if (subscriptionId != null) {
+      const subs = await SubscriptionModel.findByIdAndUpdate<Subscription>(
+        { _id: subscriptionId },
+        { muted: true },
+      );
+      return subs;
+    }
+  } catch (error) {
+    console.log('Error in "getUserServersSubscriptions"', error);
+    throw error;
+  }
 };
