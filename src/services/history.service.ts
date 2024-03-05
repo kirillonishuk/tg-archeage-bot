@@ -4,7 +4,7 @@ import historyModel from "@models/history.model";
 
 const history = historyModel;
 
-export const saveHistory = async (historyList: History[]) => {
+export const saveHistory = async (historyList: History[]): Promise<any> => {
   const pirateResult = history.insertMany(historyList);
 
   return await pirateResult;
