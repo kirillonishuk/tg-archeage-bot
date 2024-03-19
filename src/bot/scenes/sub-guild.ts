@@ -1,4 +1,4 @@
-import { BaseScene, type SceneContext } from "telegraf/scenes";
+import { Scenes } from "telegraf";
 
 import { getBackToMenuKeyboard, getMainKeyboard } from "@bot/keyboards";
 import {
@@ -8,13 +8,37 @@ import {
 } from "@bot/helpers/sub-guild";
 import { leaveToMainScene } from "@bot/helpers";
 import i18n from "@i18n/i18n";
+import queue from "@utils/p-queue";
+import logger from "@utils/logger";
 
-const subGuild = new BaseScene<SceneContext>("sub-guild");
+const subGuild = new Scenes.BaseScene<Scenes.SceneContext>("sub-guild");
 
-subGuild.enter(async (ctx: SceneContext) => {
+subGuild.enter(async (ctx: Scenes.SceneContext) => {
+  logger.debugWithCtx(ctx, "Enter sub-guild scene");
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard();
 
-  await ctx.reply(i18n.t("scenes.sub-guild.start"), backToMenuInlineKeyboard);
+  queue.add(
+    async () =>
+      await ctx.reply(
+        i18n.t("scenes.sub-guild.start"),
+        backToMenuInlineKeyboard,
+      ),
+  );
+});
+
+subGuild.leave(async (ctx: Scenes.SceneContext) => {
+  logger.debugWithCtx(ctx, "Leave sub-guild scene");
+  const { mainKeyboard } = getMainKeyboard(ctx);
+
+  queue.add(
+    async () =>
+      await ctx.reply(i18n.t("scenes.main.message"), {
+        reply_markup: {
+          keyboard: mainKeyboard,
+          one_time_keyboard: true,
+        },
+      }),
+  );
 });
 
 subGuild.on("text", findGuildToSubscribe);
@@ -22,11 +46,5 @@ subGuild.on("text", findGuildToSubscribe);
 subGuild.action(/go_to_menu/, leaveToMainScene);
 subGuild.action(/guild_/, subscribeOnGuild);
 subGuild.action(/mute_/, muteSubscribe);
-
-subGuild.leave(async (ctx: SceneContext) => {
-  const { mainKeyboard } = getMainKeyboard(ctx);
-
-  await ctx.reply(i18n.t("scenes.main.message"), mainKeyboard);
-});
 
 export default subGuild;

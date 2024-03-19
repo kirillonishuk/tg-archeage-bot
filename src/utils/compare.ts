@@ -28,24 +28,24 @@ export function compareCharacters(
     const player = prev.find((char) => char.name === updatedPlayer.name);
     if (player === undefined) {
       changes.fraction_status = PLAYER_STATUS.Join;
-      if (updatedPlayer.guild !== null) {
+      if (updatedPlayer.guild != null) {
         changes.guild_status = PLAYER_STATUS.Join;
       }
       newPlayers.push(updatedPlayer);
       history.push(changes);
     } else if (
-      updatedPlayer.guild !== player.guild ||
-      updatedPlayer.fraction !== player.fraction
+      updatedPlayer.guild != player.guild ||
+      updatedPlayer.fraction != player.fraction
     ) {
-      if (updatedPlayer.guild !== player.guild) {
-        if (updatedPlayer.guild !== null) {
+      if (updatedPlayer.guild != player.guild) {
+        if (updatedPlayer.guild != null) {
           changes.guild_status = PLAYER_STATUS.Join;
         } else {
           changes.guild_status = PLAYER_STATUS.Leave;
         }
         changes.prev_guild = player.guild;
       }
-      if (updatedPlayer.fraction !== player.fraction) {
+      if (updatedPlayer.fraction != player.fraction) {
         changes.fraction_status = PLAYER_STATUS.Join;
         changes.prev_fraction = player.fraction;
       }

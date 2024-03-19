@@ -1,5 +1,4 @@
-import { Markup } from "telegraf";
-import { type SceneContext } from "telegraf/scenes";
+import { Markup, type Scenes } from "telegraf";
 import { type InlineKeyboardMarkup } from "telegraf/typings/core/types/typegram";
 import { type Types } from "mongoose";
 
@@ -11,6 +10,7 @@ import {
 import { findPlayersByGuildName } from "@services/player.service";
 import { getBackToMenuKeyboard } from "@bot/keyboards";
 import i18n from "@i18n/i18n";
+import queue from "@utils/p-queue";
 
 import { SERVER_NAMES } from "@configs/archeage";
 
@@ -33,7 +33,7 @@ export function getGuildListButton(
 }
 
 export function getMuteButton(
-  subscriptionId: Types.ObjectId,
+  subscriptionId: Types.ObjectId | string,
 ): Markup.Markup<InlineKeyboardMarkup> {
   const { backToMenuButton } = getBackToMenuKeyboard();
 
@@ -46,17 +46,22 @@ export function getMuteButton(
   ]);
 }
 
-export async function findGuildToSubscribe(ctx: SceneContext): Promise<void> {
+export async function findGuildToSubscribe(
+  ctx: Scenes.SceneContext,
+): Promise<void> {
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
 
-  if (ctx.message !== undefined && "text" in ctx.message) {
+  if (ctx.message != undefined && "text" in ctx.message) {
     const guildName = ctx.message.text.trim();
     const players = await findPlayersByGuildName(guildName);
 
     if (players.length > 0) {
-      await ctx.reply(
-        i18n.t("scenes.sub-guild.guild_not_found"),
-        backToMenuInlineKeyboard,
+      queue.add(
+        async () =>
+          await ctx.reply(
+            i18n.t("scenes.sub-guild.guild_not_found"),
+            backToMenuInlineKeyboard,
+          ),
       );
       return;
     }
@@ -83,21 +88,29 @@ export async function findGuildToSubscribe(ctx: SceneContext): Promise<void> {
       playerCount,
     }));
 
-    await ctx.reply(
-      i18n.t("scenes.sub-guild.list_of_guild"),
-      getGuildListButton(PlayersInGuildsCounterArray, guildNameOnServer),
+    queue.add(
+      async () =>
+        await ctx.reply(
+          i18n.t("scenes.sub-guild.list_of_guild"),
+          getGuildListButton(PlayersInGuildsCounterArray, guildNameOnServer),
+        ),
     );
   } else {
-    await ctx.reply(
-      i18n.t("scenes.sub-guild.guild_not_found"),
-      backToMenuInlineKeyboard,
+    queue.add(
+      async () =>
+        await ctx.reply(
+          i18n.t("scenes.sub-guild.guild_not_found"),
+          backToMenuInlineKeyboard,
+        ),
     );
   }
 }
 
-export async function subscribeOnGuild(ctx: SceneContext): Promise<void> {
+export async function subscribeOnGuild(
+  ctx: Scenes.SceneContext,
+): Promise<void> {
   const server =
-    ctx.callbackQuery !== undefined && "data" in ctx.callbackQuery
+    ctx.callbackQuery != undefined && "data" in ctx.callbackQuery
       ? ctx.callbackQuery?.data
       : "";
   const [, serverNumber, guildName] = server.split("_");
@@ -109,26 +122,35 @@ export async function subscribeOnGuild(ctx: SceneContext): Promise<void> {
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
 
   if (typeof userSubscription === "string") {
-    await ctx.reply(
-      i18n.t(`scenes.sub-guild.${userSubscription}`),
-      backToMenuInlineKeyboard,
+    queue.add(
+      async () =>
+        await ctx.reply(
+          i18n.t(`scenes.sub-guild.${userSubscription}`),
+          backToMenuInlineKeyboard,
+        ),
     );
   } else {
-    await ctx.reply(
-      i18n.t("scenes.sub-guild.subscribed", {
-        data: `${guildName} - ${SERVER_NAMES[serverNumber]}`,
-      }),
+    queue.add(
+      async () =>
+        await ctx.reply(
+          i18n.t("scenes.sub-guild.subscribed", {
+            data: `${guildName} - ${SERVER_NAMES[serverNumber]}`,
+          }),
+        ),
     );
-    await ctx.reply(
-      i18n.t("scenes.sub-guild.wantMute"),
-      getMuteButton(userSubscription._id),
+    queue.add(
+      async () =>
+        await ctx.reply(
+          i18n.t("scenes.sub-guild.wantMute"),
+          getMuteButton(userSubscription._id),
+        ),
     );
   }
 }
 
-export async function muteSubscribe(ctx: SceneContext): Promise<void> {
+export async function muteSubscribe(ctx: Scenes.SceneContext): Promise<void> {
   const subscribeIdString =
-    ctx.callbackQuery !== undefined && "data" in ctx.callbackQuery
+    ctx.callbackQuery != undefined && "data" in ctx.callbackQuery
       ? ctx.callbackQuery?.data
       : "";
   const [, subscribeId] = subscribeIdString.split("_");
@@ -137,17 +159,23 @@ export async function muteSubscribe(ctx: SceneContext): Promise<void> {
 
   if (subscription != null) {
     await muteSubscription(subscribeId);
-    await ctx.reply(
-      i18n.t("scenes.sub-guild.muted", {
-        data: `${subscription.guild} - ${SERVER_NAMES[subscription.server]}`,
-      }),
-      backToMenuInlineKeyboard,
+    queue.add(
+      async () =>
+        await ctx.reply(
+          i18n.t("scenes.sub-guild.muted", {
+            data: `${subscription.guild} - ${SERVER_NAMES[subscription.server]}`,
+          }),
+          backToMenuInlineKeyboard,
+        ),
     );
   }
   if (subscription == null) {
-    await ctx.reply(
-      i18n.t("scenes.other.error_handler"),
-      backToMenuInlineKeyboard,
+    queue.add(
+      async () =>
+        await ctx.reply(
+          i18n.t("scenes.other.error_handler"),
+          backToMenuInlineKeyboard,
+        ),
     );
   }
 }

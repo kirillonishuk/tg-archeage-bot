@@ -4,7 +4,7 @@ import SubscriptionModel from "@models/subscription.model";
 export const createSubscribeOnServer = async (
   userId?: number,
   server?: string,
-): Promise<Subscription | string> => {
+): Promise<any> => {
   try {
     if (userId != null && server != null) {
       const checkSub = await SubscriptionModel.findOne({
@@ -12,7 +12,7 @@ export const createSubscribeOnServer = async (
         server,
         guild: null,
       });
-      if (checkSub !== undefined) {
+      if (checkSub != undefined) {
         return "alreadyExist";
       }
       const sub = new SubscriptionModel({
@@ -35,7 +35,7 @@ export const createSubscribeOnGuild = async (
   userId?: number,
   server?: string,
   guildName?: string,
-): Promise<Subscription | string> => {
+): Promise<any> => {
   try {
     if (userId != null && server != null && guildName != null) {
       const checkSub = await SubscriptionModel.findOne({
@@ -43,7 +43,7 @@ export const createSubscribeOnGuild = async (
         server,
         guild: guildName,
       });
-      if (checkSub !== undefined) {
+      if (checkSub != undefined) {
         return "alreadyExist";
       }
       const sub = new SubscriptionModel({
@@ -58,7 +58,7 @@ export const createSubscribeOnGuild = async (
       return "invalidData";
     }
   } catch (error) {
-    console.log('Error in "createSubscribeOnServer"', error);
+    console.log('Error in "createSubscribeOnGuild"', error);
     throw error;
   }
 };
@@ -98,7 +98,7 @@ export const getUserSubscriptions = async (
 
 export const getSubscriptionById = async (
   subscriptionId?: string,
-): Promise<Subscription | undefined> => {
+): Promise<Subscription | null | undefined> => {
   try {
     return await SubscriptionModel.findOne({ _id: subscriptionId });
   } catch (error) {
@@ -130,7 +130,18 @@ export const muteSubscription = async (
       return subs;
     }
   } catch (error) {
-    console.log('Error in "getUserServersSubscriptions"', error);
+    console.log('Error in "muteSubscription"', error);
+    throw error;
+  }
+};
+
+export const getServerSubscriptions = async (
+  server: string,
+): Promise<Subscription[] | null> => {
+  try {
+    return await SubscriptionModel.find({ server });
+  } catch (error) {
+    console.log('Error in "getServerSubscriptions"', error);
     throw error;
   }
 };

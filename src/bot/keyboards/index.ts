@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { Markup } from "telegraf";
-import { type SceneContext } from "telegraf/scenes";
+import { Markup, type Scenes } from "telegraf";
 import i18n from "@i18n/i18n";
 
-export const getMainKeyboard = (ctx?: SceneContext) => {
+export const getMainKeyboard = (ctx?: Scenes.SceneContext) => {
   const mainKeyboardProfile = i18n.t("keyboards.main.profile");
   const mainKeyboardSubGuild = i18n.t("keyboards.main.sub_guild");
   const mainKeyboardSubServer = i18n.t("keyboards.main.sub_server");
@@ -23,7 +22,7 @@ export const getMainKeyboard = (ctx?: SceneContext) => {
   };
 };
 
-export const getBackKeyboard = (ctx?: SceneContext) => {
+export const getBackKeyboard = (ctx?: Scenes.SceneContext) => {
   const backKeyboardBack = i18n.t("keyboards.back.back");
   let backKeyboard: any = Markup.keyboard([backKeyboardBack]);
 
@@ -35,7 +34,7 @@ export const getBackKeyboard = (ctx?: SceneContext) => {
   };
 };
 
-export const getBackToMenuKeyboard = (ctx?: SceneContext) => {
+export const getBackToMenuKeyboard = (ctx?: Scenes.SceneContext) => {
   const backToMenuKeyboardBack = i18n.t("keyboards.back.menu");
   let backToMenuKeyboard: any = Markup.keyboard([backToMenuKeyboardBack]);
   const backToMenuButton = Markup.button.callback(

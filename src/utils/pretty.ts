@@ -30,7 +30,7 @@ export const prettyText = (
 
       if (player.fraction_status === PLAYER_STATUS.Join) {
         action = `присоединился к фракции "${resolveFraction(player.fraction)}"`;
-        if (player.guild !== null) {
+        if (player.guild != null) {
           action += ` и гильдии "${player.guild}"`;
         }
       } else if (
@@ -38,7 +38,7 @@ export const prettyText = (
         player.prev_fraction != null
       ) {
         action = `покинул фракцию "${resolveFraction(player.prev_fraction)}"`;
-        if (player.guild !== null) {
+        if (player.guild != null) {
           action += ` и гильдию "${player.guild}"`;
         }
       } else if (player.guild_status === PLAYER_STATUS.Join) {

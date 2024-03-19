@@ -6,7 +6,7 @@ export const isEmpty = (value: string | number | object): boolean => {
   } else if (typeof value === "undefined" || value === undefined) {
     return true;
   } else if (
-    value !== null &&
+    value != null &&
     typeof value === "object" &&
     Object.keys(value).length === 0
   ) {

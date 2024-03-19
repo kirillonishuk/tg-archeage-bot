@@ -1,11 +1,11 @@
 import fetch from "node-fetch";
-import moment from "moment";
 
 import {
   type URLPlayerListResponse,
   type GamePlayerList,
   type ServerPlayerList,
 } from "@interfaces/archeage.interface";
+import { type History } from "@interfaces/player.interface";
 
 import {
   deletePlayers,
@@ -15,30 +15,39 @@ import {
   updatePlayers,
 } from "@services/player.service";
 import { saveHistory } from "@services/history.service";
+import { getServerSubscriptions } from "@services/subscription.service";
 import { compareCharacters, splitCandidatesByFractions } from "@utils/compare";
 import { prettyText } from "@utils/pretty";
-import { processError } from "@utils/error";
+import logger from "@utils/logger";
 
 import {
   SERVER_NAMES,
   URL_PLAYER_LIST,
   FRACTION_NAME_CODES,
 } from "@configs/archeage";
+import i18next from "i18next";
 
 export const processPlayers = async (): Promise<void> => {
-  console.log("Started process data:", moment().format("HH:mm:ss MM.DD.YY"));
-  const candidates = await fetchPlayers();
+  try {
+    logger.debug("Started 'processPlayers'");
+    const candidates = await fetchPlayers();
 
-  if (candidates !== undefined && typeof candidates !== "string") {
-    let server: keyof GamePlayerList;
-    for (server in candidates) {
-      await parseCandidates(server, candidates[server]);
+    if (candidates != undefined && typeof candidates !== "string") {
+      let server: keyof GamePlayerList;
+      for (server in candidates) {
+        const history = await parseCandidates(server, candidates[server]);
+
+        sendNotifications(server, history);
+      }
     }
+  } catch (error) {
+    logger.error(error);
   }
 };
 
 const fetchPlayers = async (): Promise<GamePlayerList | string | undefined> => {
   try {
+    logger.debug("Started 'fetchPlayers'");
     const response = await fetch(URL_PLAYER_LIST, {
       method: "GET",
       headers: {
@@ -58,21 +67,19 @@ const fetchPlayers = async (): Promise<GamePlayerList | string | undefined> => {
 
     return result.data.candidates;
   } catch (error) {
-    processError(error);
+    logger.error(error);
   }
 };
 
 const parseCandidates = async (
   server: keyof GamePlayerList,
   candidates: ServerPlayerList,
-): Promise<void> => {
+): Promise<History[] | undefined> => {
   try {
+    logger.debug("Started 'parseCandidates'");
     const serverCandidates = await findPlayersByServer(server);
 
-    if (serverCandidates.length !== 0) {
-      console.log("-------- UPDATING --------");
-      console.log(`-------- SERVER ${SERVER_NAMES[server]} --------`);
-
+    if (serverCandidates.length != 0) {
       let [pirates, west, east] = splitCandidatesByFractions(candidates);
       pirates = pirates.map((player) => ({
         ...player,
@@ -99,11 +106,30 @@ const parseCandidates = async (
       await saveNewPlayers(newPlayers);
       await deletePlayers(disappearedPlayers);
       await updatePlayers(changedPlayers);
+
+      return history;
     } else {
-      console.log("-------- DB IS EMPTY --------");
       await savePlayers(candidates, server);
     }
   } catch (error) {
-    processError(error);
+    logger.error(error);
+  }
+};
+
+const sendNotifications = async (
+  server: string,
+  history?: History[],
+): Promise<void> => {
+  try {
+    logger.debug("Started 'sendNotifications'");
+    if (history != undefined) {
+      const subscriptions = await getServerSubscriptions(server);
+
+      const header = `${i18next.t("notification.server-header")} ${SERVER_NAMES[server]}:`;
+      logger.debug(subscriptions);
+      logger.debug(header);
+    }
+  } catch (error) {
+    logger.error(error);
   }
 };

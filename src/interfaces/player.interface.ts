@@ -15,6 +15,7 @@ export interface Player {
 }
 
 export interface History {
+  _id?: string;
   name: string;
   guild: string | null;
   num: number;
@@ -30,6 +31,7 @@ export interface History {
 }
 
 export interface Subscription {
+  _id: string;
   user_id: number;
   server: SERVER_NAME_CODES;
   guild: string | null;

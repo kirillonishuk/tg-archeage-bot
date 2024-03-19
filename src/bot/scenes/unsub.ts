@@ -1,35 +1,53 @@
-import { BaseScene, type SceneContext } from "telegraf/scenes";
+import { Scenes } from "telegraf";
 
 import { getMainKeyboard, getBackToMenuKeyboard } from "@bot/keyboards";
 import { getSubscriptionButtons, unsubscribe } from "@bot/helpers/unsub";
 import i18n from "@i18n/i18n";
+import queue from "@utils/p-queue";
+import logger from "@utils/logger";
 
-const unsub = new BaseScene<SceneContext>("unsub");
+const unsub = new Scenes.BaseScene<Scenes.SceneContext>("unsub");
 
-unsub.enter(async (ctx: SceneContext) => {
+unsub.enter(async (ctx: Scenes.SceneContext) => {
+  logger.debugWithCtx(ctx, "Enter unsub scene");
   const { backToMenuKeyboard } = getBackToMenuKeyboard(ctx);
 
   const subscriptionListButtons = await getSubscriptionButtons(ctx);
 
-  if (subscriptionListButtons !== null) {
-    await ctx.reply(
-      i18n.t("scenes.unsub.list_of_subs"),
-      subscriptionListButtons,
+  if (subscriptionListButtons != null) {
+    queue.add(
+      async () =>
+        await ctx.reply(
+          i18n.t("scenes.unsub.list_of_subs"),
+          subscriptionListButtons,
+        ),
     );
   } else {
-    await ctx.reply(i18n.t("scenes.unsub.empty_list"), backToMenuKeyboard);
+    queue.add(
+      async () =>
+        await ctx.reply(i18n.t("scenes.unsub.empty_list"), backToMenuKeyboard),
+    );
   }
 });
 
-unsub.action(/go_to_menu/, async (ctx: SceneContext) => {
+unsub.leave(async (ctx: Scenes.SceneContext) => {
+  logger.debugWithCtx(ctx, "Leave unsub scene");
+  const { mainKeyboard } = getMainKeyboard(ctx);
+
+  queue.add(
+    async () =>
+      await ctx.reply(i18n.t("scenes.main.message"), {
+        reply_markup: {
+          keyboard: mainKeyboard,
+          one_time_keyboard: true,
+        },
+      }),
+  );
+});
+
+unsub.action(/go_to_menu/, async (ctx: Scenes.SceneContext) => {
   await ctx.scene.leave();
 });
 unsub.action(/unsub_/, unsubscribe);
-
-unsub.leave(async (ctx: SceneContext) => {
-  const { mainKeyboard } = getMainKeyboard(ctx);
-
-  await ctx.reply(i18n.t("scenes.main.message"), mainKeyboard);
-});
 
 export default unsub;

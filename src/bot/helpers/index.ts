@@ -1,4 +1,4 @@
-import { type SceneContext } from "telegraf/scenes";
+import { type Scenes } from "telegraf";
 
 import { BUTTON_IN_LINE } from "@configs/archeage";
 
@@ -11,12 +11,14 @@ export function splitArrayToMatrix(
   for (let i = 0; i < array.length; i += BUTTON_IN_LINE) {
     matrix.push(array.slice(i, i + BUTTON_IN_LINE));
   }
-  if (additionalButton !== null) {
+  if (additionalButton != null) {
     matrix.push([additionalButton]);
   }
   return matrix;
 }
 
-export const leaveToMainScene = async (ctx: SceneContext): Promise<void> => {
+export const leaveToMainScene = async (
+  ctx: Scenes.SceneContext,
+): Promise<void> => {
   await ctx.scene.leave();
 };
