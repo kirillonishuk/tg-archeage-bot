@@ -1,100 +1,142 @@
+import { checkOnStopWords, type SceneSessionData } from "@bot/helpers";
+import { geContinueKeyboard, getBackToMenuKeyboard } from "@bot/keyboards";
+import { SERVER_NAMES } from "@configs/archeage";
+import i18n from "@i18n/i18n";
+import { findPlayersByGuildName } from "@services/player.service";
+import {
+  createSubscribeOnGuild,
+  getUserGuildSubscriptions,
+  muteSubscription,
+} from "@services/subscription.service";
+import queue from "@utils/p-queue";
+import { type Types } from "mongoose";
 import { Markup, type Scenes } from "telegraf";
 import { type InlineKeyboardMarkup } from "telegraf/typings/core/types/typegram";
-import { type Types } from "mongoose";
 
-import {
-  muteSubscription,
-  createSubscribeOnGuild,
-  getSubscriptionById,
-} from "@services/subscription.service";
-import { findPlayersByGuildName } from "@services/player.service";
-import { getBackToMenuKeyboard } from "@bot/keyboards";
-import i18n from "@i18n/i18n";
-import queue from "@utils/p-queue";
-
-import { SERVER_NAMES } from "@configs/archeage";
-
-export function getGuildListButton(
+export async function getGuildListButton(
   serverList: any[],
   guildNames: any,
-): Markup.Markup<InlineKeyboardMarkup> {
+  ctx: Scenes.SceneContext<SceneSessionData>,
+): Promise<Markup.Markup<InlineKeyboardMarkup>> {
+  const userSubscriptions = await getUserGuildSubscriptions(ctx.from?.id);
+
   const { backToMenuButton } = getBackToMenuKeyboard();
 
-  const buttons = serverList.map(({ serverNumber, playerCount }) => [
-    Markup.button.callback(
-      `${guildNames[serverNumber]} - ${SERVER_NAMES[serverNumber]}(${i18n.t("scenes.sub-guild.members")}: ${playerCount})`,
-      `guild_${serverNumber}_${guildNames[serverNumber]}`,
-    ),
-  ]);
+  const buttons = serverList.map(({ serverNumber, playerCount }) => {
+    const alreadySubscribed = userSubscriptions?.find(
+      (sub) =>
+        sub.server === serverNumber && sub.guild === guildNames[serverNumber],
+    );
+
+    const subscribed = alreadySubscribed ? "✅" : "";
+    const muted = alreadySubscribed
+      ? alreadySubscribed.muted
+        ? "🔇"
+        : "🔊"
+      : "";
+
+    return [
+      Markup.button.callback(
+        `${subscribed} ${guildNames[serverNumber]} - ${SERVER_NAMES[serverNumber]}(${i18n.t("scenes.sub-guild.members")}: ${playerCount}) ${muted}`,
+        `guild_${serverNumber}_${guildNames[serverNumber]}`,
+      ),
+    ];
+  });
 
   buttons.push([backToMenuButton]);
 
   return Markup.inlineKeyboard(buttons);
 }
 
+export async function processGuildButtons(
+  ctx: Scenes.SceneContext<SceneSessionData>,
+  guildName: string,
+): Promise<Markup.Markup<InlineKeyboardMarkup> | undefined> {
+  const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
+  const players = await findPlayersByGuildName(guildName);
+
+  // TODO: fix guild counter
+  if (players.length === 0) {
+    queue.add(
+      async () =>
+        await ctx.reply(
+          i18n.t("scenes.sub-guild.guild_not_found"),
+          backToMenuInlineKeyboard,
+        ),
+    );
+    return;
+  }
+
+  const guildNameOnServer: any = {};
+
+  const PlayersInGuildsCounter = players.reduce<Record<string, number>>(
+    (acc, { server, guild }) => {
+      if (acc[server] === undefined) {
+        guildNameOnServer[server] = guild;
+        acc[server] = 1;
+      } else {
+        acc[server]++;
+      }
+      return acc;
+    },
+    {},
+  );
+
+  const PlayersInGuildsCounterArray = Object.entries(
+    PlayersInGuildsCounter,
+  ).map(([server, playerCount]) => ({
+    serverNumber: server,
+    playerCount,
+  }));
+
+  const guildButtons = await getGuildListButton(
+    PlayersInGuildsCounterArray,
+    guildNameOnServer,
+    ctx,
+  );
+
+  return guildButtons;
+}
+
 export function getMuteButton(
   subscriptionId: Types.ObjectId | string,
 ): Markup.Markup<InlineKeyboardMarkup> {
-  const { backToMenuButton } = getBackToMenuKeyboard();
+  const { continueButton } = geContinueKeyboard();
 
   return Markup.inlineKeyboard([
     Markup.button.callback(
       i18n.t("scenes.sub-guild.muteButton"),
       `mute_${subscriptionId.toString()}`,
     ),
-    backToMenuButton,
+    continueButton,
   ]);
 }
 
 export async function findGuildToSubscribe(
-  ctx: Scenes.SceneContext,
+  ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
 
   if (ctx.message != undefined && "text" in ctx.message) {
     const guildName = ctx.message.text.trim();
-    const players = await findPlayersByGuildName(guildName);
-
-    if (players.length === 0) {
-      queue.add(
-        async () =>
-          await ctx.reply(
-            i18n.t("scenes.sub-guild.guild_not_found"),
-            backToMenuInlineKeyboard,
-          ),
-      );
+    if (checkOnStopWords(guildName)) {
+      await queue.add(async () => {
+        await ctx.scene.leave();
+      });
       return;
     }
+    ctx.scene.session.state.guildName = guildName;
+    const guildButtons = await processGuildButtons(ctx, guildName);
 
-    const guildNameOnServer: any = {};
-
-    const PlayersInGuildsCounter = players.reduce<Record<string, number>>(
-      (acc, { server, guild }) => {
-        if (acc[server] === undefined) {
-          guildNameOnServer[server] = guild;
-          acc[server] = 1;
-        } else {
-          acc[server]++;
-        }
-        return acc;
-      },
-      {},
-    );
-
-    const PlayersInGuildsCounterArray = Object.entries(
-      PlayersInGuildsCounter,
-    ).map(([server, playerCount]) => ({
-      serverNumber: server,
-      playerCount,
-    }));
-
-    queue.add(
-      async () =>
-        await ctx.reply(
+    if (guildButtons !== undefined) {
+      queue.add(async () => {
+        const message = await ctx.reply(
           i18n.t("scenes.sub-guild.list_of_guild"),
-          getGuildListButton(PlayersInGuildsCounterArray, guildNameOnServer),
-        ),
-    );
+          guildButtons,
+        );
+        ctx.scene.session.state.messageId = message.message_id;
+      });
+    }
   } else {
     queue.add(
       async () =>
@@ -107,7 +149,7 @@ export async function findGuildToSubscribe(
 }
 
 export async function subscribeOnGuild(
-  ctx: Scenes.SceneContext,
+  ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
   const server =
     ctx.callbackQuery != undefined && "data" in ctx.callbackQuery
@@ -119,17 +161,27 @@ export async function subscribeOnGuild(
     serverNumber,
     guildName,
   );
-  const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
+  const guildButtons = await processGuildButtons(
+    ctx,
+    ctx.scene.session.state.guildName,
+  );
 
-  if (typeof userSubscription === "string") {
+  if (typeof userSubscription === "string" || guildButtons !== undefined) {
     queue.add(
       async () =>
-        await ctx.reply(
+        await ctx.editMessageText(
           i18n.t(`scenes.sub-guild.${userSubscription}`),
-          backToMenuInlineKeyboard,
+          guildButtons,
         ),
     );
   } else {
+    queue.add(
+      async () =>
+        await ctx.editMessageText(
+          i18n.t("scenes.sub-server.list_of_servers"),
+          guildButtons,
+        ),
+    );
     queue.add(
       async () =>
         await ctx.reply(
@@ -142,33 +194,42 @@ export async function subscribeOnGuild(
   }
 }
 
-export async function muteSubscribe(ctx: Scenes.SceneContext): Promise<void> {
+export async function muteSubscribe(
+  ctx: Scenes.SceneContext<SceneSessionData>,
+): Promise<void> {
   const subscribeIdString =
     ctx.callbackQuery != undefined && "data" in ctx.callbackQuery
       ? ctx.callbackQuery?.data
       : "";
-  const [, subscribeId] = subscribeIdString.split("_");
-  const subscription = await getSubscriptionById(subscribeId);
+  const subscribeId = subscribeIdString.replace(/mute_/i, "");
+  const updateResult = await muteSubscription(subscribeId);
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
 
-  if (subscription != null) {
-    await muteSubscription(subscribeId);
-    queue.add(
-      async () =>
-        await ctx.reply(
-          i18n.t("scenes.sub-guild.muted", {
-            data: `${subscription.guild} - ${SERVER_NAMES[subscription.server]}`,
-          }),
-          backToMenuInlineKeyboard,
-        ),
-    );
-  }
-  if (subscription == null) {
+  if (updateResult === undefined || updateResult == null) {
     queue.add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.other.error_handler"),
           backToMenuInlineKeyboard,
+        ),
+    );
+  } else {
+    const guildButtons = await processGuildButtons(
+      ctx,
+      ctx.scene.session.state.guildName,
+    );
+    queue.add(
+      async () =>
+        await ctx.deleteMessage(ctx.callbackQuery?.message?.message_id),
+    );
+    queue.add(
+      async () =>
+        await ctx.telegram.editMessageText(
+          ctx.chat?.id,
+          ctx.scene.session.state.messageId,
+          undefined,
+          i18n.t("scenes.unsub.list_of_subs"),
+          guildButtons,
         ),
     );
   }

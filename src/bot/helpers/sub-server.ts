@@ -1,21 +1,21 @@
-import { Markup, type Scenes } from "telegraf";
-import { type InlineKeyboardMarkup } from "telegraf/typings/core/types/typegram";
-import { type Types } from "mongoose";
-
-import { splitArrayToMatrix } from ".";
+import { type SceneSessionData } from "@bot/helpers";
+import { geContinueKeyboard, getBackToMenuKeyboard } from "@bot/keyboards";
+import { SERVER_NAMES } from "@configs/archeage";
+import i18n from "@i18n/i18n";
 import {
-  getUserServersSubscriptions,
   createSubscribeOnServer,
+  getUserServersSubscriptions,
   muteSubscription,
 } from "@services/subscription.service";
-import { getBackToMenuKeyboard } from "@bot/keyboards";
-import i18n from "@i18n/i18n";
 import queue from "@utils/p-queue";
+import { type Types } from "mongoose";
+import { Markup, type Scenes } from "telegraf";
+import { type InlineKeyboardMarkup } from "telegraf/typings/core/types/typegram";
 
-import { SERVER_NAMES } from "@configs/archeage";
+import { splitArrayToMatrix } from ".";
 
 export async function getServerListButton(
-  ctx: Scenes.SceneContext,
+  ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<Markup.Markup<InlineKeyboardMarkup>> {
   const userSubscriptions = await getUserServersSubscriptions(ctx.from?.id);
 
@@ -27,8 +27,16 @@ export async function getServerListButton(
         const alreadySubscribed = userSubscriptions?.find(
           (sub) => sub.server === key,
         );
+
+        const subscribed = alreadySubscribed ? "✅" : "";
+        const muted = alreadySubscribed
+          ? alreadySubscribed.muted
+            ? "🔇"
+            : "🔊"
+          : "";
+
         return Markup.button.callback(
-          `${!alreadySubscribed || "✅"} ${SERVER_NAMES[key]} ${alreadySubscribed?.muted ? "🔇" : "🔊"}`,
+          `${subscribed} ${SERVER_NAMES[key]} ${muted}`,
           `server_${key}`,
         );
       }),
@@ -40,19 +48,19 @@ export async function getServerListButton(
 export function getMuteButton(
   subscriptionId: Types.ObjectId | string,
 ): Markup.Markup<InlineKeyboardMarkup> {
-  const { backToMenuButton } = getBackToMenuKeyboard();
+  const { continueButton } = geContinueKeyboard();
 
   return Markup.inlineKeyboard([
     Markup.button.callback(
       i18n.t("scenes.sub-server.muteButton"),
       `mute_${subscriptionId.toString()}`,
     ),
-    backToMenuButton,
+    continueButton,
   ]);
 }
 
 export async function subscribeOnServer(
-  ctx: Scenes.SceneContext,
+  ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
   const server =
     ctx.callbackQuery != undefined && "data" in ctx.callbackQuery
@@ -63,17 +71,24 @@ export async function subscribeOnServer(
     ctx.from?.id,
     serverNumber,
   );
+  const serverButtons = await getServerListButton(ctx);
 
   if (typeof userSubscription === "string") {
-    const serverButtons = await getServerListButton(ctx);
     queue.add(
       async () =>
-        await ctx.reply(
+        await ctx.editMessageText(
           i18n.t(`scenes.sub-server.${userSubscription}`),
           serverButtons,
         ),
     );
   } else {
+    queue.add(
+      async () =>
+        await ctx.editMessageText(
+          i18n.t("scenes.sub-server.list_of_servers"),
+          serverButtons,
+        ),
+    );
     queue.add(
       async () =>
         await ctx.reply(
@@ -86,7 +101,9 @@ export async function subscribeOnServer(
   }
 }
 
-export async function muteSubscribe(ctx: Scenes.SceneContext): Promise<void> {
+export async function muteSubscribe(
+  ctx: Scenes.SceneContext<SceneSessionData>,
+): Promise<void> {
   const subscribeIdString =
     ctx.callbackQuery != undefined && "data" in ctx.callbackQuery
       ? ctx.callbackQuery?.data
@@ -94,6 +111,7 @@ export async function muteSubscribe(ctx: Scenes.SceneContext): Promise<void> {
   const subscribeId = subscribeIdString.replace(/mute_/i, "");
   const updateResult = await muteSubscription(subscribeId);
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
+  const serverButtons = await getServerListButton(ctx);
 
   if (updateResult === undefined || updateResult == null) {
     queue.add(
@@ -106,11 +124,16 @@ export async function muteSubscribe(ctx: Scenes.SceneContext): Promise<void> {
   } else {
     queue.add(
       async () =>
-        await ctx.reply(
-          i18n.t("scenes.sub-server.muted", {
-            server: SERVER_NAMES[updateResult.server],
-          }),
-          backToMenuInlineKeyboard,
+        await ctx.deleteMessage(ctx.callbackQuery?.message?.message_id),
+    );
+    queue.add(
+      async () =>
+        await ctx.telegram.editMessageText(
+          ctx.chat?.id,
+          ctx.scene.session.state.messageId,
+          undefined,
+          i18n.t("scenes.unsub.list_of_subs"),
+          serverButtons,
         ),
     );
   }

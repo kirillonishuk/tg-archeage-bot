@@ -1,7 +1,6 @@
-import { type ServerPlayerList } from "@interfaces/archeage.interface";
-import { type Player, type History } from "@interfaces/player.interface";
-
 import { FRACTION_NAME_CODES, PLAYER_STATUS } from "@configs/archeage";
+import { type ServerPlayerList } from "@interfaces/archeage.interface";
+import { type History, type Player } from "@interfaces/player.interface";
 
 export function compareCharacters(
   prev: Player[],

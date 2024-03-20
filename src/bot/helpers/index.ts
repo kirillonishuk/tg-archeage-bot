@@ -1,15 +1,26 @@
+import { BUTTON_IN_LINE } from "@configs/archeage";
+import i18n from "@i18n/i18n";
+import queue from "@utils/p-queue";
 import { type Scenes } from "telegraf";
 
-import { BUTTON_IN_LINE } from "@configs/archeage";
+interface SceneSessionStateData {
+  messageId: number;
+  guildName: string;
+}
+
+export interface SceneSessionData extends Scenes.SceneSessionData {
+  state: SceneSessionStateData;
+}
 
 export function splitArrayToMatrix(
   array: any[],
   additionalButton?: any,
+  buttonInLine: number = BUTTON_IN_LINE,
 ): any[][] {
   const matrix: any[][] = [];
 
-  for (let i = 0; i < array.length; i += BUTTON_IN_LINE) {
-    matrix.push(array.slice(i, i + BUTTON_IN_LINE));
+  for (let i = 0; i < array.length; i += buttonInLine) {
+    matrix.push(array.slice(i, i + buttonInLine));
   }
   if (additionalButton != null) {
     matrix.push([additionalButton]);
@@ -18,7 +29,28 @@ export function splitArrayToMatrix(
 }
 
 export const leaveToMainScene = async (
-  ctx: Scenes.SceneContext,
+  ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> => {
-  await ctx.scene.leave();
+  await queue.add(async () => {
+    await ctx.scene.leave();
+  });
+};
+
+export const continueScene = async (
+  ctx: Scenes.SceneContext<SceneSessionData>,
+): Promise<void> => {
+  queue.add(
+    async () => await ctx.deleteMessage(ctx.callbackQuery?.message?.message_id),
+  );
+};
+
+export const checkOnStopWords = (text: string): boolean => {
+  const stopWords = [
+    i18n.t("keyboards.main.profile"),
+    i18n.t("keyboards.main.sub_guild"),
+    i18n.t("keyboards.main.sub_server"),
+    i18n.t("keyboards.main.unsub"),
+  ];
+
+  return stopWords.includes(text);
 };

@@ -1,7 +1,6 @@
+import { FRACTION_NAMES, PLAYER_STATUS } from "@configs/archeage";
 import { type ServerPlayerList } from "@interfaces/archeage.interface";
 import { type History } from "@interfaces/player.interface";
-
-import { FRACTION_NAMES, PLAYER_STATUS } from "@configs/archeage";
 
 const resolveFraction = (fraction: keyof ServerPlayerList): string =>
   FRACTION_NAMES[fraction];

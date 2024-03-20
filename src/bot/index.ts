@@ -1,19 +1,19 @@
-import { Telegraf, session, Scenes } from "telegraf";
+import { type SceneSessionData } from "@bot/helpers";
+import { BOT_TOKEN } from "@configs/index";
+import i18n from "@i18n/i18n";
+import logger from "@utils/logger";
+import queue from "@utils/p-queue";
+import { Scenes, session, Telegraf } from "telegraf";
 
-import subServerScene from "./scenes/sub-server";
-import subGuildScene from "./scenes/sub-guild";
-import unsubScene from "./scenes/unsub";
 import { leaveToMainScene } from "./helpers";
 import { getMainKeyboard } from "./keyboards";
-import i18n from "@i18n/i18n";
-import queue from "@utils/p-queue";
-import logger from "@utils/logger";
+import subGuildScene from "./scenes/sub-guild";
+import subServerScene from "./scenes/sub-server";
+import unsubScene from "./scenes/unsub";
 
-import { BOT_TOKEN } from "@configs/index";
+const bot = new Telegraf<Scenes.SceneContext<SceneSessionData>>(BOT_TOKEN);
 
-const bot = new Telegraf<Scenes.SceneContext>(BOT_TOKEN);
-
-const stage = new Scenes.Stage<Scenes.SceneContext>([
+const stage = new Scenes.Stage<Scenes.SceneContext<SceneSessionData>>([
   subServerScene,
   subGuildScene,
   unsubScene,
@@ -21,17 +21,26 @@ const stage = new Scenes.Stage<Scenes.SceneContext>([
 bot.use(session());
 bot.use(stage.middleware());
 
-bot.hears(/(.*Подписаться на сервер)/, async (ctx: Scenes.SceneContext) => {
-  await ctx.scene.enter("sub-server");
-});
-bot.hears(/(.*Подписаться на гильдию)/, async (ctx: Scenes.SceneContext) => {
-  await ctx.scene.enter("sub-guild");
-});
-bot.hears(/(.*Отписаться от уведомлений)/, async (ctx: Scenes.SceneContext) => {
-  await ctx.scene.enter("unsub");
-});
+bot.hears(
+  /(.*Подписаться на сервер)/,
+  async (ctx: Scenes.SceneContext<SceneSessionData>) => {
+    await ctx.scene.enter("sub-server");
+  },
+);
+bot.hears(
+  /(.*Подписаться на гильдию)/,
+  async (ctx: Scenes.SceneContext<SceneSessionData>) => {
+    await ctx.scene.enter("sub-guild");
+  },
+);
+bot.hears(
+  /(.*Отписаться от уведомлений)/,
+  async (ctx: Scenes.SceneContext<SceneSessionData>) => {
+    await ctx.scene.enter("unsub");
+  },
+);
 bot.action(/go_to_menu/, leaveToMainScene);
-bot.hears(/(.*?)/, async (ctx: Scenes.SceneContext) => {
+bot.hears(/(.*?)/, async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   logger.debugWithCtx(ctx, "Default handler has fired");
   const { mainKeyboard } = getMainKeyboard(ctx);
 

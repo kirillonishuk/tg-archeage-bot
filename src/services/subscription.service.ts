@@ -80,6 +80,23 @@ export const getUserServersSubscriptions = async (
   }
 };
 
+export const getUserGuildSubscriptions = async (
+  userId?: number,
+): Promise<Subscription[] | undefined> => {
+  try {
+    if (userId != null) {
+      const subs = await SubscriptionModel.find<Subscription>({
+        user_id: userId,
+        guild: { $ne: null },
+      });
+      return subs;
+    }
+  } catch (error) {
+    console.log('Error in "getUserGuildSubscriptions"', error);
+    throw error;
+  }
+};
+
 export const getUserSubscriptions = async (
   userId?: number,
 ): Promise<Subscription[] | undefined> => {

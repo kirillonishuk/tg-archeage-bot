@@ -1,9 +1,8 @@
-import { type Player } from "@interfaces/player.interface";
-
 import {
-  type SERVER_NAME_CODES,
   type FRACTION_NAME_CODES,
+  type SERVER_NAME_CODES,
 } from "@configs/archeage";
+import { type Player } from "@interfaces/player.interface";
 
 export interface URLPlayerListResponse {
   error: boolean;

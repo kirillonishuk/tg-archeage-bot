@@ -1,8 +1,6 @@
-import { connect, disconnect } from "mongoose";
-
+import { DB_DATABASE, DB_HOST, DB_PORT } from "@configs/index";
 import logger from "@utils/logger";
-
-import { DB_HOST, DB_PORT, DB_DATABASE } from "@configs/index";
+import { connect, disconnect } from "mongoose";
 
 export const dbConnection = {
   url: `mongodb://${DB_HOST}:${DB_PORT}/${DB_DATABASE}`,

@@ -1,7 +1,6 @@
-import { Schema, model, type Document } from "mongoose";
-import { type Player } from "@interfaces/player.interface";
-
 import { FRACTION_NAME_CODES, SERVER_NAME_CODES } from "@configs/archeage";
+import { type Player } from "@interfaces/player.interface";
+import { type Document, model, Schema } from "mongoose";
 
 const PlayerSchema = new Schema(
   {

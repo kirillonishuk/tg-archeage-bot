@@ -1,11 +1,11 @@
 import "module-alias/register";
 
-import { connectToDatabase, closeDatabaseConnection } from "./databases";
+import { launchBot } from "@bot/index";
 import { processPlayers } from "@parser/index";
+import logger from "@utils/logger";
 import { scheduleFunction } from "@utils/schedule";
 
-import { launchBot } from "@bot/index";
-import logger from "@utils/logger";
+import { closeDatabaseConnection, connectToDatabase } from "./databases";
 
 const start = async (): Promise<void> => {
   try {

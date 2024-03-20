@@ -1,14 +1,11 @@
+import { FRACTION_NAME_CODES } from "@configs/archeage";
 import {
   type GamePlayerList,
   type ServerPlayerList,
 } from "@interfaces/archeage.interface";
 import { type Player } from "@interfaces/player.interface";
-
 import playerModel from "@models/player.model";
-
 import { splitCandidatesByFractions } from "@utils/compare";
-
-import { FRACTION_NAME_CODES } from "@configs/archeage";
 
 const player = playerModel;
 

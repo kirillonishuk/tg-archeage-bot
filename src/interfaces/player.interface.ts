@@ -1,7 +1,7 @@
 import {
   type FRACTION_NAME_CODES,
-  type SERVER_NAME_CODES,
   type PLAYER_STATUS,
+  type SERVER_NAME_CODES,
 } from "@configs/archeage";
 
 export interface Player {

@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { Markup, type Scenes } from "telegraf";
+import { type SceneSessionData } from "@bot/helpers";
 import i18n from "@i18n/i18n";
+import { Markup, type Scenes } from "telegraf";
 
-export const getMainKeyboard = (ctx?: Scenes.SceneContext) => {
+export const getMainKeyboard = (
+  ctx?: Scenes.SceneContext<SceneSessionData>,
+) => {
   const mainKeyboardProfile = i18n.t("keyboards.main.profile");
   const mainKeyboardSubGuild = i18n.t("keyboards.main.sub_guild");
   const mainKeyboardSubServer = i18n.t("keyboards.main.sub_server");
@@ -22,7 +25,9 @@ export const getMainKeyboard = (ctx?: Scenes.SceneContext) => {
   };
 };
 
-export const getBackKeyboard = (ctx?: Scenes.SceneContext) => {
+export const getBackKeyboard = (
+  ctx?: Scenes.SceneContext<SceneSessionData>,
+) => {
   const backKeyboardBack = i18n.t("keyboards.back.back");
   let backKeyboard: any = Markup.keyboard([backKeyboardBack]);
 
@@ -34,7 +39,9 @@ export const getBackKeyboard = (ctx?: Scenes.SceneContext) => {
   };
 };
 
-export const getBackToMenuKeyboard = (ctx?: Scenes.SceneContext) => {
+export const getBackToMenuKeyboard = (
+  ctx?: Scenes.SceneContext<SceneSessionData>,
+) => {
   const backToMenuKeyboardBack = i18n.t("keyboards.back.menu");
   let backToMenuKeyboard: any = Markup.keyboard([backToMenuKeyboardBack]);
   const backToMenuButton = Markup.button.callback(
@@ -50,5 +57,22 @@ export const getBackToMenuKeyboard = (ctx?: Scenes.SceneContext) => {
     backToMenuInlineKeyboard,
     backToMenuKeyboardBack,
     backToMenuButton,
+  };
+};
+
+export const geContinueKeyboard = (
+  ctx?: Scenes.SceneContext<SceneSessionData>,
+) => {
+  const continueKeyboardBack = i18n.t("keyboards.continue");
+  const continueButton = Markup.button.callback(
+    continueKeyboardBack,
+    "continue",
+  );
+  const continueInlineKeyboard = Markup.inlineKeyboard([continueButton]);
+
+  return {
+    continueInlineKeyboard,
+    continueKeyboardBack,
+    continueButton,
   };
 };

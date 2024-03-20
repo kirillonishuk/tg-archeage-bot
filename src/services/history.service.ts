@@ -1,5 +1,4 @@
 import { type History } from "@interfaces/player.interface";
-
 import historyModel from "@models/history.model";
 
 const history = historyModel;

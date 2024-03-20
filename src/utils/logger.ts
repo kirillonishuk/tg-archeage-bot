@@ -1,9 +1,10 @@
+import { type SceneSessionData } from "@bot/helpers";
 import { type Scenes, TelegramError } from "telegraf";
 import util from "util";
 import winston, { format } from "winston";
 
 function prepareMessage(
-  ctx: Scenes.SceneContext,
+  ctx: Scenes.SceneContext<SceneSessionData>,
   msg: string,
   ...data: any[]
 ): string {
@@ -36,10 +37,16 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const loggerWithCtx = {
-  debugWithCtx: (ctx: Scenes.SceneContext, msg: string, ...data: any[]) =>
-    logger.debug(prepareMessage(ctx, msg, ...data)),
-  errorWithCtx: (ctx: Scenes.SceneContext, msg: string, ...data: any[]) =>
-    logger.error(prepareMessage(ctx, msg, ...data)),
+  debugWithCtx: (
+    ctx: Scenes.SceneContext<SceneSessionData>,
+    msg: string,
+    ...data: any[]
+  ) => logger.debug(prepareMessage(ctx, msg, ...data)),
+  errorWithCtx: (
+    ctx: Scenes.SceneContext<SceneSessionData>,
+    msg: string,
+    ...data: any[]
+  ) => logger.error(prepareMessage(ctx, msg, ...data)),
   debug: (msg: string) => {
     logger.debug(`: ${msg}`);
   },

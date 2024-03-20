@@ -1,6 +1,5 @@
-import { Schema, model } from "mongoose";
-
 import { SERVER_NAME_CODES } from "@configs/archeage";
+import { model, Schema } from "mongoose";
 
 const SubscriptionSchema = new Schema({
   user_id: {

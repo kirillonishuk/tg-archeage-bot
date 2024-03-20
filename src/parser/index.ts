@@ -1,15 +1,19 @@
-import fetch from "node-fetch";
-import moment from "moment";
 import "moment/locale/ru";
 
+import { sendMessage } from "@bot/index";
 import {
-  type URLPlayerListResponse,
+  FRACTION_NAME_CODES,
+  LOCALE,
+  SERVER_NAMES,
+  URL_PLAYER_LIST,
+} from "@configs/archeage";
+import {
   type GamePlayerList,
   type ServerPlayerList,
+  type URLPlayerListResponse,
 } from "@interfaces/archeage.interface";
 import { type History } from "@interfaces/player.interface";
-
-import { sendMessage } from "@bot/index";
+import { saveHistory } from "@services/history.service";
 import {
   deletePlayers,
   findPlayersByServer,
@@ -18,19 +22,13 @@ import {
   updatePlayers,
   updatePlayersScore,
 } from "@services/player.service";
-import { saveHistory } from "@services/history.service";
 import { getServerSubscriptions } from "@services/subscription.service";
 import { compareCharacters, splitCandidatesByFractions } from "@utils/compare";
-import { prettyText } from "@utils/pretty";
 import logger from "@utils/logger";
-
-import {
-  SERVER_NAMES,
-  URL_PLAYER_LIST,
-  FRACTION_NAME_CODES,
-  LOCALE,
-} from "@configs/archeage";
+import { prettyText } from "@utils/pretty";
 import i18next from "i18next";
+import moment from "moment";
+import fetch from "node-fetch";
 
 moment.locale(LOCALE);
 

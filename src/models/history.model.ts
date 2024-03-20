@@ -1,10 +1,9 @@
-import { Schema, model } from "mongoose";
-
 import {
   FRACTION_NAME_CODES,
-  SERVER_NAME_CODES,
   PLAYER_STATUS,
+  SERVER_NAME_CODES,
 } from "@configs/archeage";
+import { model, Schema } from "mongoose";
 
 const HistorySchema = new Schema({
   name: {
