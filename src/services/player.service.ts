@@ -83,6 +83,21 @@ export const updatePlayers = async (players: Player[]): Promise<any> => {
   }
 };
 
+export const updatePlayersScore = async (players: Player[]): Promise<any> => {
+  for (const playerData of players) {
+    await player.findOneAndUpdate(
+      {
+        name: playerData.name,
+        server: playerData.server,
+      },
+      {
+        score: playerData.score,
+        num: playerData.num,
+      },
+    );
+  }
+};
+
 export const deletePlayers = async (players: Player[]): Promise<any> => {
   const playerdId = players.map((player) => player._id);
 

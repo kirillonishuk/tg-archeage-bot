@@ -1,23 +1,12 @@
-import moment from "moment";
-import "moment/locale/ru";
-
-import {
-  type GamePlayerList,
-  type ServerPlayerList,
-} from "@interfaces/archeage.interface";
+import { type ServerPlayerList } from "@interfaces/archeage.interface";
 import { type History } from "@interfaces/player.interface";
 
-import { FRACTION_NAMES, LOCALE, PLAYER_STATUS } from "@configs/archeage";
-
-moment.locale(LOCALE);
+import { FRACTION_NAMES, PLAYER_STATUS } from "@configs/archeage";
 
 const resolveFraction = (fraction: keyof ServerPlayerList): string =>
   FRACTION_NAMES[fraction];
 
-export const prettyText = (
-  changes: History[],
-  server: keyof GamePlayerList,
-): History[] => {
+export const prettyText = (changes: History[]): History[] => {
   return changes
     .filter((player) => player.num <= 450)
     .map((player) => {
@@ -43,7 +32,7 @@ export const prettyText = (
       }
       return {
         ...player,
-        pretty_text: `<u>${player.name}(${player.score} военки)</u> ${action}. <i>${moment(player.createdAt).format("HH:mm:ss MM.DD.YY")}</i>.`,
+        pretty_text: `<u>${player.name}(${player.score} военки)</u> ${action}.`,
       };
     });
 };

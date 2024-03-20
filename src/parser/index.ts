@@ -1,4 +1,6 @@
 import fetch from "node-fetch";
+import moment from "moment";
+import "moment/locale/ru";
 
 import {
   type URLPlayerListResponse,
@@ -14,6 +16,7 @@ import {
   saveNewPlayers,
   savePlayers,
   updatePlayers,
+  updatePlayersScore,
 } from "@services/player.service";
 import { saveHistory } from "@services/history.service";
 import { getServerSubscriptions } from "@services/subscription.service";
@@ -25,8 +28,11 @@ import {
   SERVER_NAMES,
   URL_PLAYER_LIST,
   FRACTION_NAME_CODES,
+  LOCALE,
 } from "@configs/archeage";
 import i18next from "i18next";
+
+moment.locale(LOCALE);
 
 export const processPlayers = async (): Promise<void> => {
   try {
@@ -77,7 +83,7 @@ const parseCandidates = async (
   candidates: ServerPlayerList,
 ): Promise<History[] | undefined> => {
   try {
-    logger.debug("Started 'parseCandidates'");
+    logger.debug("Started 'parseCandidates' on server " + SERVER_NAMES[server]);
     const serverCandidates = await findPlayersByServer(server);
 
     if (serverCandidates.length != 0) {
@@ -98,12 +104,15 @@ const parseCandidates = async (
         server,
       }));
 
-      let [newPlayers, disappearedPlayers, changedPlayers, history] =
-        compareCharacters(serverCandidates, pirates.concat(west, east));
+      const players = pirates.concat(west, east);
 
-      history = prettyText(history, server);
+      let [newPlayers, disappearedPlayers, changedPlayers, history] =
+        compareCharacters(serverCandidates, players);
+
+      history = prettyText(history);
       await saveHistory(history);
 
+      await updatePlayersScore(players);
       await saveNewPlayers(newPlayers);
       await deletePlayers(disappearedPlayers);
       await updatePlayers(changedPlayers);
@@ -122,14 +131,16 @@ const sendNotifications = async (
   history?: History[],
 ): Promise<void> => {
   try {
-    logger.debug("Started 'sendNotifications'");
+    logger.debug(
+      "Started 'sendNotifications' on server " + SERVER_NAMES[server],
+    );
     if (history != undefined) {
       const subscriptions = await getServerSubscriptions(server);
       if (subscriptions === null || history.length === 0) {
         return;
       }
 
-      const header = `<b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]}:</i></b>`;
+      const header = `<b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${moment().format("HH:mm DD.MM.YY")}:</i></b>`;
 
       const parsedHistory = history
         .map((line) => line.pretty_text)
@@ -141,7 +152,6 @@ const sendNotifications = async (
         disable_notification: false,
       };
       for (const subscription of subscriptions) {
-        console.log(notificationText);
         if (subscription.muted) {
           notificationOptions.disable_notification = true;
         }

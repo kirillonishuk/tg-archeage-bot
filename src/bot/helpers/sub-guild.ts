@@ -136,12 +136,6 @@ export async function subscribeOnGuild(
           i18n.t("scenes.sub-guild.subscribed", {
             data: `${guildName} - ${SERVER_NAMES[serverNumber]}`,
           }),
-        ),
-    );
-    queue.add(
-      async () =>
-        await ctx.reply(
-          i18n.t("scenes.sub-guild.wantMute"),
           getMuteButton(userSubscription._id),
         ),
     );

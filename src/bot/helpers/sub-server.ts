@@ -28,7 +28,7 @@ export async function getServerListButton(
           (sub) => sub.server === key,
         );
         return Markup.button.callback(
-          `${alreadySubscribed != null ? "✅" : ""}${SERVER_NAMES[key]}`,
+          `${!alreadySubscribed || "✅"} ${SERVER_NAMES[key]} ${alreadySubscribed?.muted ? "🔇" : "🔊"}`,
           `server_${key}`,
         );
       }),
@@ -80,12 +80,6 @@ export async function subscribeOnServer(
           i18n.t("scenes.sub-server.subscribed", {
             server: SERVER_NAMES[serverNumber],
           }),
-        ),
-    );
-    queue.add(
-      async () =>
-        await ctx.reply(
-          i18n.t("scenes.sub-server.wantMute"),
           getMuteButton(userSubscription._id),
         ),
     );
