@@ -36,17 +36,11 @@ bot.hears(/(.*?)/, async (ctx: Scenes.SceneContext) => {
   const { mainKeyboard } = getMainKeyboard(ctx);
 
   queue.add(
-    async () =>
-      await ctx.reply(i18n.t("other.default_handler"), {
-        reply_markup: {
-          keyboard: mainKeyboard,
-          one_time_keyboard: true,
-        },
-      }),
+    async () => await ctx.reply(i18n.t("other.default_handler"), mainKeyboard),
   );
 });
 
-bot.catch((error: any) => {
+bot.catch((error) => {
   logger.error("Bot error has happened", error);
 });
 
@@ -54,9 +48,16 @@ export async function launchBot(): Promise<void> {
   await bot.launch();
 }
 
-export async function send(
+export async function sendMessage(
   chatId: number | string,
   message: string,
+  options?: any,
 ): Promise<void> {
-  await bot.telegram.sendMessage(chatId, message);
+  try {
+    queue.add(
+      async () => await bot.telegram.sendMessage(chatId, message, options),
+    );
+  } catch (error) {
+    console.log(error);
+  }
 }

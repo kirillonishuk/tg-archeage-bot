@@ -7,12 +7,7 @@ import {
 } from "@interfaces/archeage.interface";
 import { type History } from "@interfaces/player.interface";
 
-import {
-  SERVER_NAMES,
-  FRACTION_NAMES,
-  LOCALE,
-  PLAYER_STATUS,
-} from "@configs/archeage";
+import { FRACTION_NAMES, LOCALE, PLAYER_STATUS } from "@configs/archeage";
 
 moment.locale(LOCALE);
 
@@ -29,26 +24,26 @@ export const prettyText = (
       let action: string = "";
 
       if (player.fraction_status === PLAYER_STATUS.Join) {
-        action = `присоединился к фракции "${resolveFraction(player.fraction)}"`;
+        action = `присоединился к фракции <b>${resolveFraction(player.fraction)}</b>`;
         if (player.guild != null) {
-          action += ` и гильдии "${player.guild}"`;
+          action += ` и гильдии <b>${player.guild}</b>`;
         }
       } else if (
         player.fraction_status === PLAYER_STATUS.Leave &&
         player.prev_fraction != null
       ) {
-        action = `покинул фракцию "${resolveFraction(player.prev_fraction)}"`;
+        action = `покинул фракцию <b>${resolveFraction(player.prev_fraction)}</b>`;
         if (player.guild != null) {
-          action += ` и гильдию "${player.guild}"`;
+          action += ` и гильдию <b>${player.guild}</b>`;
         }
       } else if (player.guild_status === PLAYER_STATUS.Join) {
-        action = `вступил в гильдию "${player.guild}"`;
+        action = `вступил в гильдию <b>${player.guild}</b>`;
       } else if (player.guild_status === PLAYER_STATUS.Leave) {
-        action = `покинул гильдию "${player.prev_guild}"`;
+        action = `покинул гильдию <b>${player.prev_guild}</b>`;
       }
       return {
         ...player,
-        pretty_text: `${SERVER_NAMES[server]}: ${player.name}(${player.score} военки) ${action}. ${moment(player.createdAt).format("HH:mm:ss MM.DD.YY")}`,
+        pretty_text: `<u>${player.name}(${player.score} военки)</u> ${action}. <i>${moment(player.createdAt).format("HH:mm:ss MM.DD.YY")}</i>.`,
       };
     });
 };

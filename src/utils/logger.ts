@@ -1,4 +1,4 @@
-import { type Scenes } from "telegraf";
+import { type Scenes, TelegramError } from "telegraf";
 import util from "util";
 import winston, { format } from "winston";
 
@@ -32,7 +32,7 @@ const logger = winston.createLogger({
 });
 
 if (process.env.NODE_ENV !== "production") {
-  logger.debug("Logging initialized at debug level");
+  logger.debug(": Logging initialized at debug level");
 }
 
 const loggerWithCtx = {
@@ -40,8 +40,20 @@ const loggerWithCtx = {
     logger.debug(prepareMessage(ctx, msg, ...data)),
   errorWithCtx: (ctx: Scenes.SceneContext, msg: string, ...data: any[]) =>
     logger.error(prepareMessage(ctx, msg, ...data)),
-  debug: logger.debug,
-  error: logger.error,
+  debug: (msg: string) => {
+    logger.debug(`: ${msg}`);
+  },
+  error: (msg: string, error?: any) => {
+    if (error instanceof Error || error instanceof TelegramError) {
+      msg = ": " + msg + error.message + "/n" + error.stack;
+      if (error.stack) {
+        msg = msg + "/n" + error.stack;
+      }
+    } else {
+      msg = ": Unexpected error in Logger";
+    }
+    logger.error(msg);
+  },
 };
 
 export default loggerWithCtx;

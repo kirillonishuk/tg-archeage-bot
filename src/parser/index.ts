@@ -7,6 +7,7 @@ import {
 } from "@interfaces/archeage.interface";
 import { type History } from "@interfaces/player.interface";
 
+import { sendMessage } from "@bot/index";
 import {
   deletePlayers,
   findPlayersByServer,
@@ -41,7 +42,7 @@ export const processPlayers = async (): Promise<void> => {
       }
     }
   } catch (error) {
-    logger.error(error);
+    logger.error("processPlayers error: ", error);
   }
 };
 
@@ -67,7 +68,7 @@ const fetchPlayers = async (): Promise<GamePlayerList | string | undefined> => {
 
     return result.data.candidates;
   } catch (error) {
-    logger.error(error);
+    logger.error("fetchPlayers error: ", error);
   }
 };
 
@@ -112,7 +113,7 @@ const parseCandidates = async (
       await savePlayers(candidates, server);
     }
   } catch (error) {
-    logger.error(error);
+    logger.error("parseCandidates error: ", error);
   }
 };
 
@@ -124,12 +125,35 @@ const sendNotifications = async (
     logger.debug("Started 'sendNotifications'");
     if (history != undefined) {
       const subscriptions = await getServerSubscriptions(server);
+      if (subscriptions === null || history.length === 0) {
+        return;
+      }
 
-      const header = `${i18next.t("notification.server-header")} ${SERVER_NAMES[server]}:`;
-      logger.debug(subscriptions);
-      logger.debug(header);
+      const header = `<b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]}:</i></b>`;
+
+      const parsedHistory = history
+        .map((line) => line.pretty_text)
+        .filter((prettyText) => prettyText)
+        .join("\n");
+      const notificationText = header + "\n" + parsedHistory;
+      const notificationOptions = {
+        parse_mode: "HTML",
+        disable_notification: false,
+      };
+      for (const subscription of subscriptions) {
+        console.log(notificationText);
+        if (subscription.muted) {
+          notificationOptions.disable_notification = true;
+        }
+
+        await sendMessage(
+          subscription.user_id,
+          notificationText,
+          notificationOptions,
+        );
+      }
     }
   } catch (error) {
-    logger.error(error);
+    logger.error("sendNotifications error: ", error);
   }
 };

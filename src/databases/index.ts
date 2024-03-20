@@ -1,5 +1,7 @@
 import { connect, disconnect } from "mongoose";
 
+import logger from "@utils/logger";
+
 import { DB_HOST, DB_PORT, DB_DATABASE } from "@configs/index";
 
 export const dbConnection = {
@@ -11,15 +13,15 @@ export const dbConnection = {
 };
 
 export const connectToDatabase = async (): Promise<any> => {
-  console.log("Connected to MongoDB");
-  return await connect(dbConnection.url);
+  await connect(dbConnection.url);
+  logger.debug("Connected to MongoDB");
 };
 
 export const closeDatabaseConnection = async (): Promise<void> => {
   try {
     await disconnect();
-    console.log("Disconnected from MongoDB");
+    logger.debug("Disconnected from MongoDB");
   } catch (error) {
-    console.error("Error closing database connection:", error);
+    logger.error("Error closing database connection:", error);
   }
 };

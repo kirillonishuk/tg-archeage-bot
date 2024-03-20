@@ -55,7 +55,7 @@ export async function findGuildToSubscribe(
     const guildName = ctx.message.text.trim();
     const players = await findPlayersByGuildName(guildName);
 
-    if (players.length > 0) {
+    if (players.length === 0) {
       queue.add(
         async () =>
           await ctx.reply(

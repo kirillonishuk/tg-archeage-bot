@@ -7,11 +7,11 @@ export const getMainKeyboard = (ctx?: Scenes.SceneContext) => {
   const mainKeyboardSubGuild = i18n.t("keyboards.main.sub_guild");
   const mainKeyboardSubServer = i18n.t("keyboards.main.sub_server");
   const mainKeyboardUnsub = i18n.t("keyboards.main.unsub");
-  let mainKeyboard: any = Markup.keyboard([
+  let mainKeyboard = Markup.keyboard([
     [mainKeyboardSubGuild, mainKeyboardSubServer],
     [mainKeyboardUnsub],
   ]);
-  mainKeyboard = mainKeyboard.resize();
+  mainKeyboard = mainKeyboard.oneTime().resize();
 
   return {
     mainKeyboardProfile,

@@ -31,13 +31,7 @@ subGuild.leave(async (ctx: Scenes.SceneContext) => {
   const { mainKeyboard } = getMainKeyboard(ctx);
 
   queue.add(
-    async () =>
-      await ctx.reply(i18n.t("scenes.main.message"), {
-        reply_markup: {
-          keyboard: mainKeyboard,
-          one_time_keyboard: true,
-        },
-      }),
+    async () => await ctx.reply(i18n.t("scenes.main.message"), mainKeyboard),
   );
 });
 
