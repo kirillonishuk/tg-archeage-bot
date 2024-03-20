@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/husky.sh"
+
+message="$(cat $1)"
+requiredPattern="^[0-9]+\.[0-9]+\.[0-9]+: [a-zA-Z0-9 ]+$"
+if ! [[ $message =~ $requiredPattern ]];
+then
+  echo "🚨 Wrong commit message! 😕"
+  echo "The commit message must have this format:"
+  echo "<current npm project version>: <what was done>"
+  echo "Example: 1.0.0: updated db connection"
+  echo "-"
+  echo "Your commit message was:"
+  echo $message
+  echo "For more information, check script in .husky/commit-msg"
+  exit 1
+fi
