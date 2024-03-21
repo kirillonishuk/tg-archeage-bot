@@ -72,11 +72,8 @@ export async function unsubscribe(
       );
     } else {
       queue.add(
-        async () => await ctx.deleteMessage(ctx.scene.session.state.messageId),
-      );
-      queue.add(
         async () =>
-          await ctx.reply(
+          await ctx.editMessageText(
             i18n.t("scenes.unsub.empty_list"),
             backToMenuInlineKeyboard,
           ),

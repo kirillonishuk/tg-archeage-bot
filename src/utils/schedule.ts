@@ -4,10 +4,10 @@ export function scheduleFunction(cb: () => void): void {
   const now = new Date();
   const minutes = now.getMinutes();
   const millisecondsUntilNextCall =
-    (UPDATE_INTERVAL - (minutes % UPDATE_INTERVAL)) * 60 * 1000;
+    ((UPDATE_INTERVAL + 1) - (minutes % (UPDATE_INTERVAL + 1))) * 60 * 1000;
 
   cb();
   setTimeout(() => {
-    setInterval(cb, (UPDATE_INTERVAL + 1) * 60 * 1000);
+    setInterval(cb, (UPDATE_INTERVAL) * 60 * 1000);
   }, millisecondsUntilNextCall);
 }

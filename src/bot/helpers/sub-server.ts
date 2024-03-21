@@ -132,7 +132,7 @@ export async function muteSubscribe(
           ctx.chat?.id,
           ctx.scene.session.state.messageId,
           undefined,
-          i18n.t("scenes.unsub.list_of_subs"),
+          i18n.t("scenes.sub-server.list_of_servers"),
           serverButtons,
         ),
     );

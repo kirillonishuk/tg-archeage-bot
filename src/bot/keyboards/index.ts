@@ -10,11 +10,12 @@ export const getMainKeyboard = (
   const mainKeyboardSubGuild = i18n.t("keyboards.main.sub_guild");
   const mainKeyboardSubServer = i18n.t("keyboards.main.sub_server");
   const mainKeyboardUnsub = i18n.t("keyboards.main.unsub");
-  let mainKeyboard = Markup.keyboard([
+  const mainKeyboard = Markup.keyboard([
     [mainKeyboardSubGuild, mainKeyboardSubServer],
     [mainKeyboardUnsub],
-  ]);
-  mainKeyboard = mainKeyboard.oneTime().resize();
+  ])
+    .oneTime()
+    .resize();
 
   return {
     mainKeyboardProfile,
@@ -29,9 +30,7 @@ export const getBackKeyboard = (
   ctx?: Scenes.SceneContext<SceneSessionData>,
 ) => {
   const backKeyboardBack = i18n.t("keyboards.back.back");
-  let backKeyboard: any = Markup.keyboard([backKeyboardBack]);
-
-  backKeyboard = backKeyboard.resize();
+  const backKeyboard = Markup.keyboard([backKeyboardBack]).resize();
 
   return {
     backKeyboard,
@@ -43,14 +42,12 @@ export const getBackToMenuKeyboard = (
   ctx?: Scenes.SceneContext<SceneSessionData>,
 ) => {
   const backToMenuKeyboardBack = i18n.t("keyboards.back.menu");
-  let backToMenuKeyboard: any = Markup.keyboard([backToMenuKeyboardBack]);
+  const backToMenuKeyboard = Markup.keyboard([backToMenuKeyboardBack]).resize();
   const backToMenuButton = Markup.button.callback(
     backToMenuKeyboardBack,
     "go_to_menu",
   );
   const backToMenuInlineKeyboard = Markup.inlineKeyboard([backToMenuButton]);
-
-  backToMenuKeyboard = backToMenuKeyboard.resize();
 
   return {
     backToMenuKeyboard,

@@ -156,7 +156,24 @@ export const getServerSubscriptions = async (
   server: string,
 ): Promise<Subscription[] | null> => {
   try {
-    return await SubscriptionModel.find({ server });
+    return await SubscriptionModel.find({
+      server,
+      guild: null,
+    });
+  } catch (error) {
+    console.log('Error in "getServerSubscriptions"', error);
+    throw error;
+  }
+};
+
+export const getServerGuildSubscriptions = async (
+  server: string,
+): Promise<Subscription[] | null> => {
+  try {
+    return await SubscriptionModel.find({
+      server,
+      guild: { $ne: null },
+    });
   } catch (error) {
     console.log('Error in "getServerSubscriptions"', error);
     throw error;

@@ -32,6 +32,9 @@ export const leaveToMainScene = async (
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> => {
   await queue.add(async () => {
+    await ctx.deleteMessage();
+  });
+  await queue.add(async () => {
     await ctx.scene.leave();
   });
 };

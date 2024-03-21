@@ -14,18 +14,16 @@ import { Markup, type Scenes } from "telegraf";
 import { type InlineKeyboardMarkup } from "telegraf/typings/core/types/typegram";
 
 export async function getGuildListButton(
-  serverList: any[],
-  guildNames: any,
+  guildList: any[],
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<Markup.Markup<InlineKeyboardMarkup>> {
   const userSubscriptions = await getUserGuildSubscriptions(ctx.from?.id);
 
   const { backToMenuButton } = getBackToMenuKeyboard();
 
-  const buttons = serverList.map(({ serverNumber, playerCount }) => {
+  const buttons = guildList.map(({ serverNumber, guildName, playerCount }) => {
     const alreadySubscribed = userSubscriptions?.find(
-      (sub) =>
-        sub.server === serverNumber && sub.guild === guildNames[serverNumber],
+      (sub) => sub.server === serverNumber && sub.guild === guildName,
     );
 
     const subscribed = alreadySubscribed ? "✅" : "";
@@ -37,8 +35,8 @@ export async function getGuildListButton(
 
     return [
       Markup.button.callback(
-        `${subscribed} ${guildNames[serverNumber]} - ${SERVER_NAMES[serverNumber]}(${i18n.t("scenes.sub-guild.members")}: ${playerCount}) ${muted}`,
-        `guild_${serverNumber}_${guildNames[serverNumber]}`,
+        `${subscribed} ${guildName} - ${SERVER_NAMES[serverNumber]}(${i18n.t("scenes.sub-guild.members")}: ${playerCount}) ${muted}`,
+        `guild_${serverNumber}_${guildName}`,
       ),
     ];
   });
@@ -55,7 +53,6 @@ export async function processGuildButtons(
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
   const players = await findPlayersByGuildName(guildName);
 
-  // TODO: fix guild counter
   if (players.length === 0) {
     queue.add(
       async () =>
@@ -67,31 +64,32 @@ export async function processGuildButtons(
     return;
   }
 
-  const guildNameOnServer: any = {};
-
   const PlayersInGuildsCounter = players.reduce<Record<string, number>>(
     (acc, { server, guild }) => {
-      if (acc[server] === undefined) {
-        guildNameOnServer[server] = guild;
-        acc[server] = 1;
+      if (acc[`${server}_${guild}`] === undefined) {
+        acc[`${server}_${guild}`] = 1;
       } else {
-        acc[server]++;
+        acc[`${server}_${guild}`]++;
       }
       return acc;
     },
     {},
   );
 
-  const PlayersInGuildsCounterArray = Object.entries(
-    PlayersInGuildsCounter,
-  ).map(([server, playerCount]) => ({
-    serverNumber: server,
-    playerCount,
-  }));
+  const PlayersInGuildsCounterArray = Object.entries(PlayersInGuildsCounter)
+    .map(([serverAndGuildName, playerCount]) => {
+      const [serverNumber, guildName] = serverAndGuildName.split("_");
+
+      return {
+        serverNumber,
+        guildName,
+        playerCount,
+      };
+    })
+    .sort((prev, next) => next.playerCount - prev.playerCount);
 
   const guildButtons = await getGuildListButton(
     PlayersInGuildsCounterArray,
-    guildNameOnServer,
     ctx,
   );
 
@@ -166,7 +164,7 @@ export async function subscribeOnGuild(
     ctx.scene.session.state.guildName,
   );
 
-  if (typeof userSubscription === "string" || guildButtons !== undefined) {
+  if (typeof userSubscription === "string") {
     queue.add(
       async () =>
         await ctx.editMessageText(
@@ -178,7 +176,7 @@ export async function subscribeOnGuild(
     queue.add(
       async () =>
         await ctx.editMessageText(
-          i18n.t("scenes.sub-server.list_of_servers"),
+          i18n.t("scenes.sub-guild.list_of_guild"),
           guildButtons,
         ),
     );
@@ -228,7 +226,7 @@ export async function muteSubscribe(
           ctx.chat?.id,
           ctx.scene.session.state.messageId,
           undefined,
-          i18n.t("scenes.unsub.list_of_subs"),
+          i18n.t("scenes.sub-guild.list_of_guild"),
           guildButtons,
         ),
     );

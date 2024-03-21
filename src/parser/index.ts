@@ -22,7 +22,10 @@ import {
   updatePlayers,
   updatePlayersScore,
 } from "@services/player.service";
-import { getServerSubscriptions } from "@services/subscription.service";
+import {
+  getServerGuildSubscriptions,
+  getServerSubscriptions,
+} from "@services/subscription.service";
 import { compareCharacters, splitCandidatesByFractions } from "@utils/compare";
 import logger from "@utils/logger";
 import { prettyText } from "@utils/pretty";
@@ -132,33 +135,65 @@ const sendNotifications = async (
     logger.debug(
       "Started 'sendNotifications' on server " + SERVER_NAMES[server],
     );
-    if (history != undefined) {
-      const subscriptions = await getServerSubscriptions(server);
-      if (subscriptions === null || history.length === 0) {
-        return;
+    if (history != undefined && history.length > 0) {
+      const serverSubscriptions = await getServerSubscriptions(server);
+      if (serverSubscriptions && serverSubscriptions.length > 0) {
+        const header = `<b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${moment().format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
+
+        const parsedHistory = history
+          .map((line) => line.pretty_text)
+          .filter((prettyText) => prettyText)
+          .join("\n");
+        const notificationText = header + parsedHistory;
+        const notificationOptions = {
+          parse_mode: "HTML",
+          disable_notification: false,
+        };
+        for (const subscription of serverSubscriptions) {
+          if (subscription.muted) {
+            notificationOptions.disable_notification = true;
+          }
+
+          await sendMessage(
+            subscription.user_id,
+            notificationText,
+            notificationOptions,
+          );
+        }
       }
 
-      const header = `<b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${moment().format("HH:mm DD.MM.YY")}:</i></b>`;
+      const guildSubscriptions = await getServerGuildSubscriptions(server);
+      if (guildSubscriptions && guildSubscriptions.length > 0) {
+        for (const subscription of guildSubscriptions) {
+          const shouldBeNotify = history.filter(
+            (line) =>
+              line.prev_guild === subscription.guild ||
+              line.guild === subscription.guild,
+          );
+          if (!shouldBeNotify.length) {
+            continue;
+          }
+          const header = `<b>${i18next.t("notification.guild-header")} <i>${subscription.guild} ${moment().format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
 
-      const parsedHistory = history
-        .map((line) => line.pretty_text)
-        .filter((prettyText) => prettyText)
-        .join("\n");
-      const notificationText = header + "\n" + parsedHistory;
-      const notificationOptions = {
-        parse_mode: "HTML",
-        disable_notification: false,
-      };
-      for (const subscription of subscriptions) {
-        if (subscription.muted) {
-          notificationOptions.disable_notification = true;
+          const parsedHistory = shouldBeNotify
+            .map((line) => line.pretty_text)
+            .filter((prettyText) => prettyText)
+            .join("\n");
+          const notificationText = header + parsedHistory;
+          const notificationOptions = {
+            parse_mode: "HTML",
+            disable_notification: false,
+          };
+          if (subscription.muted) {
+            notificationOptions.disable_notification = true;
+          }
+
+          await sendMessage(
+            subscription.user_id,
+            notificationText,
+            notificationOptions,
+          );
         }
-
-        await sendMessage(
-          subscription.user_id,
-          notificationText,
-          notificationOptions,
-        );
       }
     }
   } catch (error) {
