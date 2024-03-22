@@ -1,20 +1,23 @@
-import { DB_DATABASE, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT } from "@configs/index";
+import {
+  DB_DATABASE,
+  DB_HOST,
+  DB_PASSWORD,
+  DB_PORT,
+  DB_USER,
+} from "@configs/index";
 import logger from "@utils/logger";
-import { connect, disconnect } from "mongoose";
+import { connect, type ConnectOptions, disconnect } from "mongoose";
 
-const AUTH_DB_DATA = DB_USER && DB_PASSWORD ? `${DB_USER}:${DB_PASSWORD}@` : '';
-const DB_ADRESS = `${DB_HOST}:${DB_PORT}`
-
-export const dbConnection = {
-  url: `mongodb://${AUTH_DB_DATA}${DB_ADRESS}/${DB_DATABASE}`,
-  options: {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+export const dbUrl = `mongodb://${DB_HOST}:${DB_PORT}/${DB_DATABASE}`;
+export const dbConnection: ConnectOptions = {
+  auth: {
+    username: DB_USER,
+    password: DB_PASSWORD,
   },
 };
 
 export const connectToDatabase = async (): Promise<any> => {
-  await connect(dbConnection.url);
+  await connect(dbUrl, dbConnection);
   logger.debug("Connected to MongoDB");
 };
 
