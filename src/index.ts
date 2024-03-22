@@ -30,9 +30,8 @@ const start = async (): Promise<void> => {
 };
 
 process.on("exit", () => {
-  closeDatabaseConnection().catch((error) => {
-    logger.error("Unexpected Exit error: ", error);
-  });
+  closeDatabaseConnection();
+  
 });
 
 void start();
