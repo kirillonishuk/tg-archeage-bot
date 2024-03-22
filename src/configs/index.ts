@@ -6,6 +6,7 @@ export const {
   BOT_TOKEN = "",
   DB_USER,
   DB_PASSWORD,
+  DB_AUTHDB,
   DB_HOST,
   DB_PORT,
   DB_DATABASE,

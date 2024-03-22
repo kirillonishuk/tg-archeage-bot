@@ -1,4 +1,5 @@
 import {
+  DB_AUTHDB,
   DB_DATABASE,
   DB_HOST,
   DB_PASSWORD,
@@ -14,6 +15,7 @@ export const dbConnection: ConnectOptions = {
     username: DB_USER,
     password: DB_PASSWORD,
   },
+  authSource: DB_AUTHDB,
 };
 
 export const connectToDatabase = async (): Promise<any> => {
