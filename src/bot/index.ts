@@ -5,8 +5,7 @@ import logger from "@utils/logger";
 import queue from "@utils/p-queue";
 import { Scenes, session, Telegraf } from "telegraf";
 
-import { info, start, subguild, subserver, unsub } from "./commands";
-import { leaveToMainScene } from "./helpers";
+import { useRouting } from "./commands";
 import { getMainKeyboard } from "./keyboards";
 import subGuildScene from "./scenes/sub-guild";
 import subServerScene from "./scenes/sub-server";
@@ -21,30 +20,8 @@ const stage = new Scenes.Stage<Scenes.SceneContext<SceneSessionData>>([
 ]);
 bot.use(session());
 bot.use(stage.middleware());
+useRouting(bot);
 
-bot.command("start", start);
-bot.command("info", info);
-bot.command("subserver", subserver);
-bot.command("subguild", subguild);
-bot.command("unsub", unsub);
-bot.hears(
-  /(.*Подписаться на сервер)/,
-  async (ctx: Scenes.SceneContext<SceneSessionData>) => {
-    queue.add(async () => await ctx.scene.enter("sub-server"));
-  },
-);
-bot.hears(
-  /(.*Подписаться на гильдию)/,
-  async (ctx: Scenes.SceneContext<SceneSessionData>) => {
-    queue.add(async () => await ctx.scene.enter("sub-guild"));
-  },
-);
-bot.hears(
-  /(.*Отписаться от уведомлений)/,
-  async (ctx: Scenes.SceneContext<SceneSessionData>) => {
-    queue.add(async () => await ctx.scene.enter("unsub"));
-  },
-);
 bot.hears(/(.*?)/, async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   logger.debugWithCtx(ctx, "Default handler has fired");
   const { mainKeyboard } = getMainKeyboard(ctx);
@@ -54,7 +31,6 @@ bot.hears(/(.*?)/, async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   );
 });
 
-bot.action(/go_to_menu/, leaveToMainScene);
 bot.catch((error) => {
   logger.error("Bot error has happened", error);
 });

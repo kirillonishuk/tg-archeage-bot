@@ -1,3 +1,4 @@
+import { getMainKeyboard } from "@bot/keyboards";
 import { BUTTON_IN_LINE } from "@configs/archeage";
 import i18n from "@i18n/i18n";
 import queue from "@utils/p-queue";
@@ -37,6 +38,11 @@ export const leaveToMainScene = async (
   await queue.add(async () => {
     await ctx.scene.leave();
   });
+  const { mainKeyboard } = getMainKeyboard(ctx);
+
+  queue.add(
+    async () => await ctx.reply(i18n.t("scenes.main.message"), mainKeyboard),
+  );
 };
 
 export const continueScene = async (
@@ -53,6 +59,11 @@ export const checkOnStopWords = (text: string): boolean => {
     i18n.t("keyboards.main.sub_guild"),
     i18n.t("keyboards.main.sub_server"),
     i18n.t("keyboards.main.unsub"),
+    "/start",
+    "/info",
+    "/subserver",
+    "/subguild",
+    "/unsub",
   ];
 
   return stopWords.includes(text);

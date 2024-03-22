@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": "src",
     "paths": {
       "@configs/*": ["configs/*"],
       "@parser/*": ["parser/*"],
@@ -18,13 +17,15 @@
     "typeRoots": ["./node_modules/@types", "./env.d.ts"],
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
     "isolatedModules": true,
     "strict": true,
     "lib": ["ES2016"],
     "skipLibCheck": true,
     "moduleResolution": "Node",
     "sourceMap": true,
-    "outDir": "dist"
+    "baseUrl": "./src",
+    "outDir": "./dist"
   },
-  "include": ["src/**/*", "env.d.ts", "src/locales/*.json"]
+  "include": ["src/**/*.ts", "env.d.ts", "src/locales/**/*.json"]
 }

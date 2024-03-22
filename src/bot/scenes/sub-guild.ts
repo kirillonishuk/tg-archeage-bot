@@ -1,24 +1,21 @@
-import {
-  continueScene,
-  leaveToMainScene,
-  type SceneSessionData,
-} from "@bot/helpers";
+import { useRouting } from "@bot/commands";
+import { continueScene, type SceneSessionData } from "@bot/helpers";
 import {
   findGuildToSubscribe,
   muteSubscribe,
   subscribeOnGuild,
 } from "@bot/helpers/sub-guild";
-import { getBackToMenuKeyboard, getMainKeyboard } from "@bot/keyboards";
+import { getBackToMenuKeyboard } from "@bot/keyboards";
 import i18n from "@i18n/i18n";
 import logger from "@utils/logger";
 import queue from "@utils/p-queue";
 import { Scenes } from "telegraf";
 
-const subGuild = new Scenes.BaseScene<Scenes.SceneContext<SceneSessionData>>(
-  "sub-guild",
-);
+const subGuildScene = new Scenes.BaseScene<
+  Scenes.SceneContext<SceneSessionData>
+>("sub-guild");
 
-subGuild.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
+subGuildScene.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   logger.debugWithCtx(ctx, "Enter sub-guild scene");
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard();
 
@@ -31,20 +28,16 @@ subGuild.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   );
 });
 
-subGuild.leave(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
-  logger.debugWithCtx(ctx, "Leave sub-guild scene");
-  const { mainKeyboard } = getMainKeyboard(ctx);
+useRouting(subGuildScene);
 
-  queue.add(
-    async () => await ctx.reply(i18n.t("scenes.main.message"), mainKeyboard),
-  );
+subGuildScene.on("text", findGuildToSubscribe);
+
+subGuildScene.action(/continue/, continueScene);
+subGuildScene.action(/guild_/, subscribeOnGuild);
+subGuildScene.action(/mute_/, muteSubscribe);
+
+subGuildScene.leave(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
+  logger.debugWithCtx(ctx, "Leave sub-guild scene");
 });
 
-subGuild.on("text", findGuildToSubscribe);
-
-subGuild.action(/go_to_menu/, leaveToMainScene);
-subGuild.action(/continue/, continueScene);
-subGuild.action(/guild_/, subscribeOnGuild);
-subGuild.action(/mute_/, muteSubscribe);
-
-export default subGuild;
+export default subGuildScene;

@@ -17,8 +17,8 @@ import { splitArrayToMatrix } from ".";
 function getSubscriptionName(subscription: Subscription): string {
   const muted = subscription.muted ? "🔇" : "🔊";
   return subscription.guild != null
-    ? `${subscription.guild} - ${SERVER_NAMES[subscription.server]} ${muted}`
-    : `${SERVER_NAMES[subscription.server]} ${muted}`;
+    ? `${muted} ${subscription.guild} - ${SERVER_NAMES[subscription.server]}`
+    : `${muted} ${SERVER_NAMES[subscription.server]}`;
 }
 
 export async function getSubscriptionButtons(
@@ -39,7 +39,7 @@ export async function getSubscriptionButtons(
         );
       }),
       backToMenuButton,
-      2,
+      1,
     ),
   );
 }

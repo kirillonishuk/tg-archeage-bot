@@ -35,7 +35,7 @@ export async function getGuildListButton(
 
     return [
       Markup.button.callback(
-        `${subscribed} ${guildName} - ${SERVER_NAMES[serverNumber]}(${i18n.t("scenes.sub-guild.members")}: ${playerCount}) ${muted}`,
+        `${subscribed} ${muted} ${guildName} - ${SERVER_NAMES[serverNumber]}(${i18n.t("scenes.sub-guild.members")}: ${playerCount})`,
         `guild_${serverNumber}_${guildName}`,
       ),
     ];
@@ -118,9 +118,6 @@ export async function findGuildToSubscribe(
   if (ctx.message != undefined && "text" in ctx.message) {
     const guildName = ctx.message.text.trim();
     if (checkOnStopWords(guildName)) {
-      await queue.add(async () => {
-        await ctx.scene.leave();
-      });
       return;
     }
     ctx.scene.session.state.guildName = guildName;

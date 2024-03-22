@@ -1,3 +1,4 @@
+import { useRouting } from "@bot/commands";
 import {
   continueScene,
   leaveToMainScene,
@@ -8,17 +9,16 @@ import {
   muteSubscribe,
   subscribeOnServer,
 } from "@bot/helpers/sub-server";
-import { getMainKeyboard } from "@bot/keyboards";
 import i18n from "@i18n/i18n";
 import logger from "@utils/logger";
 import queue from "@utils/p-queue";
 import { Scenes } from "telegraf";
 
-const subServer = new Scenes.BaseScene<Scenes.SceneContext<SceneSessionData>>(
-  "sub-server",
-);
+const subServerScene = new Scenes.BaseScene<
+  Scenes.SceneContext<SceneSessionData>
+>("sub-server");
 
-subServer.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
+subServerScene.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   logger.debugWithCtx(ctx, "Enter sub-server scene");
   const serverListButtons = await getServerListButton(ctx);
 
@@ -31,18 +31,15 @@ subServer.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   });
 });
 
-subServer.leave(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
-  logger.debugWithCtx(ctx, "Leave sub-server scene");
-  const { mainKeyboard } = getMainKeyboard(ctx);
+useRouting(subServerScene);
 
-  queue.add(
-    async () => await ctx.reply(i18n.t("scenes.main.message"), mainKeyboard),
-  );
+subServerScene.action(/go_to_menu/, leaveToMainScene);
+subServerScene.action(/continue/, continueScene);
+subServerScene.action(/server_/, subscribeOnServer);
+subServerScene.action(/mute_/, muteSubscribe);
+
+subServerScene.leave(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
+  logger.debugWithCtx(ctx, "Leave sub-server scene");
 });
 
-subServer.action(/go_to_menu/, leaveToMainScene);
-subServer.action(/continue/, continueScene);
-subServer.action(/server_/, subscribeOnServer);
-subServer.action(/mute_/, muteSubscribe);
-
-export default subServer;
+export default subServerScene;

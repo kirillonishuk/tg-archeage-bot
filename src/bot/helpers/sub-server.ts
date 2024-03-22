@@ -36,11 +36,12 @@ export async function getServerListButton(
           : "";
 
         return Markup.button.callback(
-          `${subscribed} ${SERVER_NAMES[key]} ${muted}`,
+          `${subscribed} ${muted} ${SERVER_NAMES[key]}`,
           `server_${key}`,
         );
       }),
       backToMenuButton,
+      2,
     ),
   );
 }
