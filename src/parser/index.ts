@@ -175,7 +175,7 @@ const sendNotifications = async (
             continue;
           }
           const muteEmoji = subscription.muted ? "🔕 " : "";
-          const header = `👑<b>${i18next.t("notification.guild-header")} <i>${subscription.guild} ${moment().format("HH:mm DD.MM.YY")}:</i></b>👑\n\n`;
+          const header = `👑<b>${i18next.t("notification.guild-header")} <i>${subscription.guild} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>👑\n\n`;
 
           const parsedHistory = shouldBeNotify
             .map((line) => line.pretty_text ? `❗️${line.pretty_text}` : line.pretty_text)
