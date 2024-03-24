@@ -7,6 +7,7 @@ import { Scenes, session, Telegraf } from "telegraf";
 
 import { useRouting } from "./commands";
 import { getMainKeyboard } from "./keyboards";
+import searchPlayerScene from "./scenes/search-player";
 import subGuildScene from "./scenes/sub-guild";
 import subServerScene from "./scenes/sub-server";
 import unsubScene from "./scenes/unsub";
@@ -17,6 +18,7 @@ const stage = new Scenes.Stage<Scenes.SceneContext<SceneSessionData>>([
   subServerScene,
   subGuildScene,
   unsubScene,
+  searchPlayerScene,
 ]);
 bot.use(session());
 bot.use(stage.middleware());

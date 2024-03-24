@@ -138,20 +138,21 @@ const sendNotifications = async (
     if (history != undefined && history.length > 0) {
       const serverSubscriptions = await getServerSubscriptions(server);
       if (serverSubscriptions && serverSubscriptions.length > 0) {
-        const header = `<b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${moment().format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
+        const header = `🌐<b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>🌐\n\n`;
 
         const parsedHistory = history
           .map((line) => line.pretty_text)
-          .filter((prettyText) => prettyText)
+          .filter((prettyText) => `▶️ ${prettyText}`)
           .join("\n");
-        const notificationText = header + parsedHistory;
         const notificationOptions = {
           parse_mode: "HTML",
           disable_notification: false,
         };
+        let notificationText = header + parsedHistory;
         for (const subscription of serverSubscriptions) {
           if (subscription.muted) {
             notificationOptions.disable_notification = true;
+            notificationText = "🔕 " + notificationText;
           }
 
           await sendMessage(
@@ -173,20 +174,18 @@ const sendNotifications = async (
           if (!shouldBeNotify.length) {
             continue;
           }
-          const header = `<b>${i18next.t("notification.guild-header")} <i>${subscription.guild} ${moment().format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
+          const muteEmoji = subscription.muted ? "🔕 " : "";
+          const header = `👑<b>${i18next.t("notification.guild-header")} <i>${subscription.guild} ${moment().format("HH:mm DD.MM.YY")}:</i></b>👑\n\n`;
 
           const parsedHistory = shouldBeNotify
             .map((line) => line.pretty_text)
-            .filter((prettyText) => prettyText)
+            .filter((prettyText) => `▶️ ${prettyText}`)
             .join("\n");
-          const notificationText = header + parsedHistory;
           const notificationOptions = {
             parse_mode: "HTML",
-            disable_notification: false,
+            disable_notification: subscription.muted,
           };
-          if (subscription.muted) {
-            notificationOptions.disable_notification = true;
-          }
+          const notificationText = muteEmoji + header + parsedHistory;
 
           await sendMessage(
             subscription.user_id,

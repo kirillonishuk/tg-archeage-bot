@@ -7,6 +7,7 @@ import {
   getUserServersSubscriptions,
   muteSubscription,
 } from "@services/subscription.service";
+import logger from "@utils/logger";
 import queue from "@utils/p-queue";
 import { type Types } from "mongoose";
 import { Markup, type Scenes } from "telegraf";
@@ -75,14 +76,25 @@ export async function subscribeOnServer(
   const serverButtons = await getServerListButton(ctx);
 
   if (typeof userSubscription === "string") {
-    queue.add(
-      async () =>
-        await ctx.editMessageText(
-          i18n.t(`scenes.sub-server.${userSubscription}`),
-          serverButtons,
-        ),
-    );
+    if (
+      ctx.callbackQuery?.message != undefined &&
+      "text" in ctx.callbackQuery.message &&
+      ctx.callbackQuery.message.text !==
+        i18n.t(`scenes.sub-server.${userSubscription}`)
+    ) {
+      queue.add(
+        async () =>
+          await ctx.editMessageText(
+            i18n.t(`scenes.sub-server.${userSubscription}`),
+            serverButtons,
+          ),
+      );
+    }
   } else {
+    logger.debugWithCtx(
+      ctx,
+      `Subscribed on server "${SERVER_NAMES[serverNumber]}", id: ${userSubscription._id}`,
+    );
     queue.add(
       async () =>
         await ctx.editMessageText(
@@ -123,6 +135,10 @@ export async function muteSubscribe(
         ),
     );
   } else {
+    logger.debugWithCtx(
+      ctx,
+      `Subscribed on server ${SERVER_NAMES[updateResult.server]} muted, id: ${updateResult._id}`,
+    );
     queue.add(
       async () =>
         await ctx.deleteMessage(ctx.callbackQuery?.message?.message_id),

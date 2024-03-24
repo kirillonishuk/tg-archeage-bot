@@ -7,6 +7,7 @@ import { type Scenes } from "telegraf";
 interface SceneSessionStateData {
   messageId: number;
   guildName: string;
+  searchPlayerName: string;
 }
 
 export interface SceneSessionData extends Scenes.SceneSessionData {
@@ -59,11 +60,13 @@ export const checkOnStopWords = (text: string): boolean => {
     i18n.t("keyboards.main.sub_guild"),
     i18n.t("keyboards.main.sub_server"),
     i18n.t("keyboards.main.unsub"),
+    i18n.t("keyboards.main.search_player"),
     "/start",
     "/info",
     "/subserver",
     "/subguild",
     "/unsub",
+    "/players",
   ];
 
   return stopWords.includes(text);

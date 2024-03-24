@@ -31,7 +31,6 @@ const start = async (): Promise<void> => {
 
 process.on("exit", () => {
   closeDatabaseConnection();
-  
 });
 
 void start();

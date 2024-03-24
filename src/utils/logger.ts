@@ -5,16 +5,24 @@ import winston, { format } from "winston";
 
 function prepareMessage(
   ctx: Scenes.SceneContext<SceneSessionData>,
-  msg: string,
+  msg: any,
   ...data: any[]
 ): string {
-  const formattedMessage = data.length > 0 ? util.format(msg, ...data) : msg;
+  if (msg instanceof Error || msg instanceof TelegramError) {
+    msg = ": " + msg.message + "/n" + msg.stack;
+    if (msg.stack) {
+      msg = msg + "/n" + msg.stack;
+    }
+    return `: ${msg}`;
+  } else {
+    const formattedMessage = data.length > 0 ? util.format(msg, ...data) : msg;
 
-  if (ctx?.from) {
-    return `[${ctx.from.id}/${ctx.from.username}]: ${formattedMessage}`;
+    if (ctx?.from) {
+      return `[${ctx.from.id}/${ctx.from.username}]: ${formattedMessage}`;
+    }
+
+    return `: ${formattedMessage}`;
   }
-
-  return `: ${formattedMessage}`;
 }
 
 const { combine, timestamp, printf } = format;
@@ -44,7 +52,7 @@ const loggerWithCtx = {
   ) => logger.debug(prepareMessage(ctx, msg, ...data)),
   errorWithCtx: (
     ctx: Scenes.SceneContext<SceneSessionData>,
-    msg: string,
+    msg: any,
     ...data: any[]
   ) => logger.error(prepareMessage(ctx, msg, ...data)),
   debug: (msg: string) => {

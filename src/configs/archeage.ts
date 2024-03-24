@@ -1,6 +1,6 @@
 export const LOCALE = "ru";
 
-export const UPDATE_INTERVAL = 10;
+export const UPDATE_INTERVAL = 20;
 
 export const URL_PLAYER_LIST =
   "https://archeage.ru/dynamic/rank/?a=heroes_data";

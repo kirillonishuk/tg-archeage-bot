@@ -10,9 +10,11 @@ export const getMainKeyboard = (
   const mainKeyboardSubGuild = i18n.t("keyboards.main.sub_guild");
   const mainKeyboardSubServer = i18n.t("keyboards.main.sub_server");
   const mainKeyboardUnsub = i18n.t("keyboards.main.unsub");
+  const mainKeyboardSearchPlayer = i18n.t("keyboards.main.search_player");
   const mainKeyboard = Markup.keyboard([
     [mainKeyboardSubGuild, mainKeyboardSubServer],
     [mainKeyboardUnsub],
+    [mainKeyboardSearchPlayer],
   ])
     .oneTime()
     .resize();

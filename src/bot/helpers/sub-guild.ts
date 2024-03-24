@@ -8,6 +8,7 @@ import {
   getUserGuildSubscriptions,
   muteSubscription,
 } from "@services/subscription.service";
+import logger from "@utils/logger";
 import queue from "@utils/p-queue";
 import { type Types } from "mongoose";
 import { Markup, type Scenes } from "telegraf";
@@ -115,11 +116,19 @@ export async function findGuildToSubscribe(
 ): Promise<void> {
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
 
+  queue.add(async () => await ctx.deleteMessage());
+  queue.add(async () => {
+    if (ctx.scene.session.state.messageId !== 0) {
+      await ctx.deleteMessage(ctx.scene.session.state.messageId);
+      ctx.scene.session.state.messageId = 0;
+    }
+  });
   if (ctx.message != undefined && "text" in ctx.message) {
     const guildName = ctx.message.text.trim();
     if (checkOnStopWords(guildName)) {
       return;
     }
+    logger.debugWithCtx(ctx, `Looking for guild "${guildName}"`);
     ctx.scene.session.state.guildName = guildName;
     const guildButtons = await processGuildButtons(ctx, guildName);
 
@@ -162,14 +171,25 @@ export async function subscribeOnGuild(
   );
 
   if (typeof userSubscription === "string") {
-    queue.add(
-      async () =>
-        await ctx.editMessageText(
-          i18n.t(`scenes.sub-guild.${userSubscription}`),
-          guildButtons,
-        ),
-    );
+    if (
+      ctx.callbackQuery?.message != undefined &&
+      "text" in ctx.callbackQuery.message &&
+      ctx.callbackQuery.message.text !==
+        i18n.t(`scenes.sub-server.${userSubscription}`)
+    ) {
+      queue.add(
+        async () =>
+          await ctx.editMessageText(
+            i18n.t(`scenes.sub-guild.${userSubscription}`),
+            guildButtons,
+          ),
+      );
+    }
   } else {
+    logger.debugWithCtx(
+      ctx,
+      `Subscribed on guild "${guildName} server ${SERVER_NAMES[serverNumber]}", id: ${userSubscription._id}`,
+    );
     queue.add(
       async () =>
         await ctx.editMessageText(
@@ -209,6 +229,10 @@ export async function muteSubscribe(
         ),
     );
   } else {
+    logger.debugWithCtx(
+      ctx,
+      `Subscribed on guild "${updateResult.guild} server ${SERVER_NAMES[updateResult.server]}" muted, id: ${updateResult._id}`,
+    );
     const guildButtons = await processGuildButtons(
       ctx,
       ctx.scene.session.state.guildName,

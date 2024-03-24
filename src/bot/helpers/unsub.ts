@@ -8,6 +8,7 @@ import {
   getSubscriptionById,
   getUserSubscriptions,
 } from "@services/subscription.service";
+import logger from "@utils/logger";
 import queue from "@utils/p-queue";
 import { Markup, type Scenes } from "telegraf";
 import { type InlineKeyboardMarkup } from "telegraf/typings/core/types/typegram";
@@ -57,6 +58,7 @@ export async function unsubscribe(
 
   if (subscription != undefined) {
     await deleteSubscription(_id);
+    logger.debugWithCtx(ctx, `Unsubscribed from id: ${_id}`);
 
     const subscriptionListButtons = await getSubscriptionButtons(ctx);
     if (subscriptionListButtons != null) {

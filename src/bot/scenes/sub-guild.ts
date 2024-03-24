@@ -19,13 +19,13 @@ subGuildScene.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   logger.debugWithCtx(ctx, "Enter sub-guild scene");
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard();
 
-  queue.add(
-    async () =>
-      await ctx.reply(
-        i18n.t("scenes.sub-guild.start"),
-        backToMenuInlineKeyboard,
-      ),
-  );
+  queue.add(async () => {
+    const message = await ctx.reply(
+      i18n.t("scenes.sub-guild.start"),
+      backToMenuInlineKeyboard,
+    );
+    ctx.scene.session.state.messageId = message.message_id;
+  });
 });
 
 useRouting(subGuildScene);

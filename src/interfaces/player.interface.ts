@@ -12,6 +12,8 @@ export interface Player {
   score: string;
   fraction: FRACTION_NAME_CODES;
   server: SERVER_NAME_CODES;
+  updatedAt: Date;
+  createdAt: Date;
 }
 
 export interface History {

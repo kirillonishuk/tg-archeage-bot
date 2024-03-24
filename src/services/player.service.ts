@@ -81,18 +81,23 @@ export const updatePlayers = async (players: Player[]): Promise<any> => {
 };
 
 export const updatePlayersScore = async (players: Player[]): Promise<any> => {
+  const promiseList = [];
   for (const playerData of players) {
-    await player.findOneAndUpdate(
-      {
-        name: playerData.name,
-        server: playerData.server,
-      },
-      {
-        score: playerData.score,
-        num: playerData.num,
-      },
+    promiseList.push(
+      player.findOneAndUpdate(
+        {
+          name: playerData.name,
+          server: playerData.server,
+        },
+        {
+          score: playerData.score,
+          num: playerData.num,
+        },
+      ),
     );
   }
+
+  return await Promise.all(promiseList);
 };
 
 export const deletePlayers = async (players: Player[]): Promise<any> => {
@@ -107,4 +112,26 @@ export const findPlayersByGuildName = async (
   const users: Player[] = await player.find({ guild: new RegExp(guild, "i") });
 
   return users;
+};
+
+export const findPlayersByName = async (
+  name: string,
+  limit: number = 10,
+  page: number = 14,
+): Promise<Player[]> => {
+  const users: Player[] = await player
+    .find({ name: new RegExp(name, "i") })
+    .limit(limit)
+    .skip((page - 1) * limit)
+    .sort({ createdAt: -1 });
+
+  return users;
+};
+
+export const getPlayersCountByName = async (name: string): Promise<number> => {
+  const count: number = await player
+    .find({ name: new RegExp(name, "i") })
+    .countDocuments();
+
+  return count;
 };
