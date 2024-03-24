@@ -17,7 +17,7 @@ export async function useRouting(
   bot.command("subserver", subserver);
   bot.command("subguild", subguild);
   bot.command("unsub", unsub);
-  bot.command("search-player", searchPlayer);
+  bot.command("search_player", searchPlayer);
   bot.hears(/(.*Подписаться на сервер)/, hearsSubOnServer);
   bot.hears(/(.*Подписаться на гильдию)/, hearsSubOnGuild);
   bot.hears(/(.*Отписаться от уведомлений)/, hearsUnsub);
