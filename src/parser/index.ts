@@ -141,8 +141,8 @@ const sendNotifications = async (
         const header = `🌐<b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>🌐\n\n`;
 
         const parsedHistory = history
-          .map((line) => line.pretty_text)
-          .filter((prettyText) => `▶️ ${prettyText}`)
+          .map((line) => line.pretty_text ? `❗️${line.pretty_text}` : line.pretty_text)
+          .filter((prettyText) => prettyText)
           .join("\n");
         const notificationOptions = {
           parse_mode: "HTML",
@@ -178,8 +178,8 @@ const sendNotifications = async (
           const header = `👑<b>${i18next.t("notification.guild-header")} <i>${subscription.guild} ${moment().format("HH:mm DD.MM.YY")}:</i></b>👑\n\n`;
 
           const parsedHistory = shouldBeNotify
-            .map((line) => line.pretty_text)
-            .filter((prettyText) => `▶️ ${prettyText}`)
+            .map((line) => line.pretty_text ? `❗️${line.pretty_text}` : line.pretty_text)
+            .filter((prettyText) => prettyText)
             .join("\n");
           const notificationOptions = {
             parse_mode: "HTML",
