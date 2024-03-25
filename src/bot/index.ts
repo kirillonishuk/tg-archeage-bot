@@ -2,8 +2,8 @@ import { type SceneSessionData } from "@bot/helpers";
 import { BOT_TOKEN } from "@configs/index";
 import i18n from "@i18n/i18n";
 import logger from "@utils/logger";
-import queue from "@utils/p-queue";
-import { Scenes, session, Telegraf } from "telegraf";
+import add from "@utils/p-queue";
+import { Scenes, session, Telegraf, type TelegramError } from "telegraf";
 
 import { useRouting } from "./commands";
 import { getMainKeyboard } from "./keyboards";
@@ -28,7 +28,7 @@ bot.hears(/(.*?)/, async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   logger.debugWithCtx(ctx, "Default handler has fired");
   const { mainKeyboard } = getMainKeyboard(ctx);
 
-  queue.add(
+  add(
     async () => await ctx.reply(i18n.t("other.default_handler"), mainKeyboard),
   );
 });
@@ -45,12 +45,10 @@ export async function sendMessage(
   chatId: number | string,
   message: string,
   options?: any,
+  errorCb?: (error: TelegramError) => Promise<any>,
 ): Promise<void> {
-  try {
-    queue.add(
-      async () => await bot.telegram.sendMessage(chatId, message, options),
-    );
-  } catch (error) {
-    console.log(error);
-  }
+  add(
+    async () => await bot.telegram.sendMessage(chatId, message, options),
+    async (error) => errorCb && (await errorCb(error)),
+  );
 }

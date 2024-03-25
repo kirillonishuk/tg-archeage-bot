@@ -23,6 +23,7 @@ import {
   updatePlayersScore,
 } from "@services/player.service";
 import {
+  deleteSubscription,
   getServerGuildSubscriptions,
   getServerSubscriptions,
 } from "@services/subscription.service";
@@ -32,6 +33,7 @@ import { prettyText } from "@utils/pretty";
 import i18next from "i18next";
 import moment from "moment";
 import fetch from "node-fetch";
+import { type TelegramError } from "telegraf";
 
 moment.locale(LOCALE);
 
@@ -127,6 +129,15 @@ const parseCandidates = async (
   }
 };
 
+const unsubForBlockedUsers =
+  (subscribeId: string) => async (error: TelegramError) => {
+    console.log(subscribeId);
+    console.log(error.code);
+    if (error.code === 403) {
+      await deleteSubscription(subscribeId);
+    }
+  };
+
 const sendNotifications = async (
   server: string,
   history?: History[],
@@ -141,7 +152,9 @@ const sendNotifications = async (
         const header = `🌐<b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>🌐\n\n`;
 
         const parsedHistory = history
-          .map((line) => line.pretty_text ? `❗️${line.pretty_text}` : line.pretty_text)
+          .map((line) =>
+            line.pretty_text ? `❗️${line.pretty_text}` : line.pretty_text,
+          )
           .filter((prettyText) => prettyText)
           .join("\n");
         const notificationOptions = {
@@ -159,6 +172,7 @@ const sendNotifications = async (
             subscription.user_id,
             notificationText,
             notificationOptions,
+            unsubForBlockedUsers(subscription._id),
           );
         }
       }
@@ -178,7 +192,9 @@ const sendNotifications = async (
           const header = `👑<b>${i18next.t("notification.guild-header")} <i>${subscription.guild} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>👑\n\n`;
 
           const parsedHistory = shouldBeNotify
-            .map((line) => line.pretty_text ? `❗️${line.pretty_text}` : line.pretty_text)
+            .map((line) =>
+              line.pretty_text ? `❗️${line.pretty_text}` : line.pretty_text,
+            )
             .filter((prettyText) => prettyText)
             .join("\n");
           const notificationOptions = {
@@ -191,6 +207,7 @@ const sendNotifications = async (
             subscription.user_id,
             notificationText,
             notificationOptions,
+            unsubForBlockedUsers(subscription._id),
           );
         }
       }

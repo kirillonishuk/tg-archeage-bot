@@ -9,7 +9,7 @@ import {
   muteSubscription,
 } from "@services/subscription.service";
 import logger from "@utils/logger";
-import queue from "@utils/p-queue";
+import add from "@utils/p-queue";
 import { type Types } from "mongoose";
 import { Markup, type Scenes } from "telegraf";
 import { type InlineKeyboardMarkup } from "telegraf/typings/core/types/typegram";
@@ -55,7 +55,7 @@ export async function processGuildButtons(
   const players = await findPlayersByGuildName(guildName);
 
   if (players.length === 0) {
-    queue.add(
+    add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.sub-guild.guild_not_found"),
@@ -116,8 +116,8 @@ export async function findGuildToSubscribe(
 ): Promise<void> {
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
 
-  queue.add(async () => await ctx.deleteMessage());
-  queue.add(async () => {
+  add(async () => await ctx.deleteMessage());
+  add(async () => {
     if (ctx.scene.session.state.messageId !== 0) {
       await ctx.deleteMessage(ctx.scene.session.state.messageId);
       ctx.scene.session.state.messageId = 0;
@@ -133,7 +133,7 @@ export async function findGuildToSubscribe(
     const guildButtons = await processGuildButtons(ctx, guildName);
 
     if (guildButtons !== undefined) {
-      queue.add(async () => {
+      add(async () => {
         const message = await ctx.reply(
           i18n.t("scenes.sub-guild.list_of_guild"),
           guildButtons,
@@ -142,7 +142,7 @@ export async function findGuildToSubscribe(
       });
     }
   } else {
-    queue.add(
+    add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.sub-guild.guild_not_found"),
@@ -177,7 +177,7 @@ export async function subscribeOnGuild(
       ctx.callbackQuery.message.text !==
         i18n.t(`scenes.sub-server.${userSubscription}`)
     ) {
-      queue.add(
+      add(
         async () =>
           await ctx.editMessageText(
             i18n.t(`scenes.sub-guild.${userSubscription}`),
@@ -190,14 +190,14 @@ export async function subscribeOnGuild(
       ctx,
       `Subscribed on guild "${guildName} server ${SERVER_NAMES[serverNumber]}", id: ${userSubscription._id}`,
     );
-    queue.add(
+    add(
       async () =>
         await ctx.editMessageText(
           i18n.t("scenes.sub-guild.list_of_guild"),
           guildButtons,
         ),
     );
-    queue.add(
+    add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.sub-guild.subscribed", {
@@ -221,7 +221,7 @@ export async function muteSubscribe(
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
 
   if (updateResult === undefined || updateResult == null) {
-    queue.add(
+    add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.other.error_handler"),
@@ -237,11 +237,11 @@ export async function muteSubscribe(
       ctx,
       ctx.scene.session.state.guildName,
     );
-    queue.add(
+    add(
       async () =>
         await ctx.deleteMessage(ctx.callbackQuery?.message?.message_id),
     );
-    queue.add(
+    add(
       async () =>
         await ctx.telegram.editMessageText(
           ctx.chat?.id,

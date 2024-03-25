@@ -4,7 +4,7 @@ import { findPlayer, sendAnotherPage } from "@bot/helpers/search-player";
 import { getBackToMenuKeyboard } from "@bot/keyboards";
 import i18n from "@i18n/i18n";
 import logger from "@utils/logger";
-import queue from "@utils/p-queue";
+import add from "@utils/p-queue";
 import { Scenes } from "telegraf";
 
 const searchPlayerScene = new Scenes.BaseScene<
@@ -15,7 +15,7 @@ searchPlayerScene.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   logger.debugWithCtx(ctx, "Enter search-player scene");
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard();
 
-  queue.add(async () => {
+  add(async () => {
     const message = await ctx.reply(
       i18n.t("scenes.search-player.start"),
       backToMenuInlineKeyboard,

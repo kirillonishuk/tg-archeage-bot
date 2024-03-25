@@ -9,7 +9,7 @@ import {
   getUserSubscriptions,
 } from "@services/subscription.service";
 import logger from "@utils/logger";
-import queue from "@utils/p-queue";
+import add from "@utils/p-queue";
 import { Markup, type Scenes } from "telegraf";
 import { type InlineKeyboardMarkup } from "telegraf/typings/core/types/typegram";
 
@@ -62,7 +62,7 @@ export async function unsubscribe(
 
     const subscriptionListButtons = await getSubscriptionButtons(ctx);
     if (subscriptionListButtons != null) {
-      queue.add(
+      add(
         async () =>
           await ctx.telegram.editMessageText(
             ctx.chat?.id,
@@ -73,7 +73,7 @@ export async function unsubscribe(
           ),
       );
     } else {
-      queue.add(
+      add(
         async () =>
           await ctx.editMessageText(
             i18n.t("scenes.unsub.empty_list"),
@@ -82,7 +82,7 @@ export async function unsubscribe(
       );
     }
   } else {
-    queue.add(
+    add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.unsub.not_found"),

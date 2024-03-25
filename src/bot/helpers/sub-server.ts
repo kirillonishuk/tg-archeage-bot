@@ -8,7 +8,7 @@ import {
   muteSubscription,
 } from "@services/subscription.service";
 import logger from "@utils/logger";
-import queue from "@utils/p-queue";
+import add from "@utils/p-queue";
 import { type Types } from "mongoose";
 import { Markup, type Scenes } from "telegraf";
 import { type InlineKeyboardMarkup } from "telegraf/typings/core/types/typegram";
@@ -82,7 +82,7 @@ export async function subscribeOnServer(
       ctx.callbackQuery.message.text !==
         i18n.t(`scenes.sub-server.${userSubscription}`)
     ) {
-      queue.add(
+      add(
         async () =>
           await ctx.editMessageText(
             i18n.t(`scenes.sub-server.${userSubscription}`),
@@ -95,14 +95,14 @@ export async function subscribeOnServer(
       ctx,
       `Subscribed on server "${SERVER_NAMES[serverNumber]}", id: ${userSubscription._id}`,
     );
-    queue.add(
+    add(
       async () =>
         await ctx.editMessageText(
           i18n.t("scenes.sub-server.list_of_servers"),
           serverButtons,
         ),
     );
-    queue.add(
+    add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.sub-server.subscribed", {
@@ -127,7 +127,7 @@ export async function muteSubscribe(
   const serverButtons = await getServerListButton(ctx);
 
   if (updateResult === undefined || updateResult == null) {
-    queue.add(
+    add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.other.error_handler"),
@@ -139,11 +139,11 @@ export async function muteSubscribe(
       ctx,
       `Subscribed on server ${SERVER_NAMES[updateResult.server]} muted, id: ${updateResult._id}`,
     );
-    queue.add(
+    add(
       async () =>
         await ctx.deleteMessage(ctx.callbackQuery?.message?.message_id),
     );
-    queue.add(
+    add(
       async () =>
         await ctx.telegram.editMessageText(
           ctx.chat?.id,

@@ -11,7 +11,7 @@ import {
 } from "@bot/helpers/sub-server";
 import i18n from "@i18n/i18n";
 import logger from "@utils/logger";
-import queue from "@utils/p-queue";
+import add from "@utils/p-queue";
 import { Scenes } from "telegraf";
 
 const subServerScene = new Scenes.BaseScene<
@@ -22,7 +22,7 @@ subServerScene.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   logger.debugWithCtx(ctx, "Enter sub-server scene");
   const serverListButtons = await getServerListButton(ctx);
 
-  queue.add(async () => {
+  add(async () => {
     const message = await ctx.reply(
       i18n.t("scenes.sub-server.list_of_servers"),
       serverListButtons,

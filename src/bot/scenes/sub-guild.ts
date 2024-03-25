@@ -8,7 +8,7 @@ import {
 import { getBackToMenuKeyboard } from "@bot/keyboards";
 import i18n from "@i18n/i18n";
 import logger from "@utils/logger";
-import queue from "@utils/p-queue";
+import add from "@utils/p-queue";
 import { Scenes } from "telegraf";
 
 const subGuildScene = new Scenes.BaseScene<
@@ -19,7 +19,7 @@ subGuildScene.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   logger.debugWithCtx(ctx, "Enter sub-guild scene");
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard();
 
-  queue.add(async () => {
+  add(async () => {
     const message = await ctx.reply(
       i18n.t("scenes.sub-guild.start"),
       backToMenuInlineKeyboard,

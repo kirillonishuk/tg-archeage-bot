@@ -8,7 +8,7 @@ import {
   getPlayersCountByName,
 } from "@services/player.service";
 import logger from "@utils/logger";
-import queue from "@utils/p-queue";
+import add from "@utils/p-queue";
 import { Markup, type Scenes } from "telegraf";
 import { type InlineKeyboardButton } from "telegraf/typings/core/types/typegram";
 
@@ -76,8 +76,8 @@ export async function findPlayer(
   const { backToMenuInlineKeyboard, backToMenuButton } =
     getBackToMenuKeyboard(ctx);
 
-  queue.add(async () => await ctx.deleteMessage());
-  queue.add(async () => {
+  add(async () => await ctx.deleteMessage());
+  add(async () => {
     if (ctx.scene.session.state.messageId !== 0) {
       await ctx.deleteMessage(ctx.scene.session.state.messageId);
       ctx.scene.session.state.messageId = 0;
@@ -100,7 +100,7 @@ export async function findPlayer(
       const players = await findPlayersByName(playerName, PAGE_LIMIT, page);
       const parsedPlayers = parseText(players, playerName, playerCount);
 
-      queue.add(
+      add(
         async () =>
           await ctx.reply(parsedPlayers, {
             parse_mode: "HTML",
@@ -110,7 +110,7 @@ export async function findPlayer(
           }),
       );
     } else {
-      queue.add(
+      add(
         async () =>
           await ctx.reply(
             i18n.t("scenes.search-player.not-found", { username: playerName }),
@@ -124,7 +124,7 @@ export async function findPlayer(
       );
     }
   } else {
-    queue.add(
+    add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.search-player.not-found"),
@@ -151,7 +151,7 @@ export async function sendAnotherPage(
   const players = await findPlayersByName(playerName, PAGE_LIMIT, page);
   const parsedPlayers = parseText(players, playerName, playerCount);
 
-  queue.add(
+  add(
     async () =>
       await ctx.editMessageText(parsedPlayers, {
         parse_mode: "HTML",

@@ -1,7 +1,7 @@
 import { getMainKeyboard } from "@bot/keyboards";
 import { BUTTON_IN_LINE } from "@configs/archeage";
 import i18n from "@i18n/i18n";
-import queue from "@utils/p-queue";
+import add from "@utils/p-queue";
 import { type Scenes } from "telegraf";
 
 interface SceneSessionStateData {
@@ -33,23 +33,21 @@ export function splitArrayToMatrix(
 export const leaveToMainScene = async (
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> => {
-  await queue.add(async () => {
+  await add(async () => {
     await ctx.deleteMessage();
   });
-  await queue.add(async () => {
+  await add(async () => {
     await ctx.scene.leave();
   });
   const { mainKeyboard } = getMainKeyboard(ctx);
 
-  queue.add(
-    async () => await ctx.reply(i18n.t("scenes.main.message"), mainKeyboard),
-  );
+  add(async () => await ctx.reply(i18n.t("scenes.main.message"), mainKeyboard));
 };
 
 export const continueScene = async (
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> => {
-  queue.add(
+  add(
     async () => await ctx.deleteMessage(ctx.callbackQuery?.message?.message_id),
   );
 };

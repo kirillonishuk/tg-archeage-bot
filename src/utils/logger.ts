@@ -59,10 +59,15 @@ const loggerWithCtx = {
     logger.debug(`: ${msg}`);
   },
   error: (msg: string, error?: any) => {
-    if (error instanceof Error || error instanceof TelegramError) {
-      msg = ": " + msg + error.message + "/n" + error.stack;
+    if (error instanceof TelegramError) {
+      msg = `: Telegram Error, Code "${error.code}", ${msg}\n${error.message}`;
       if (error.stack) {
-        msg = msg + "/n" + error.stack;
+        msg = msg + "\n" + error.stack;
+      }
+    } else if (error instanceof Error) {
+      msg = `: NodeJS Error, ${msg}\n${error.message}`;
+      if (error.stack) {
+        msg = msg + "\n" + error.stack;
       }
     } else {
       msg = ": Unexpected error in Logger";

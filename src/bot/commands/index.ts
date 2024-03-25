@@ -1,7 +1,7 @@
 import { type SceneSessionData } from "@bot/helpers";
 import i18n from "@i18n/i18n";
 import logger from "@utils/logger";
-import queue from "@utils/p-queue";
+import add from "@utils/p-queue";
 import { type Scenes, type Telegraf } from "telegraf";
 
 import { leaveToMainScene } from "../helpers";
@@ -29,7 +29,7 @@ export async function start(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
   const { mainKeyboard } = getMainKeyboard(ctx);
-  queue.add(async () => await ctx.reply(i18n.t("other.start"), mainKeyboard));
+  add(async () => await ctx.reply(i18n.t("other.start"), mainKeyboard));
 }
 
 export async function info(
@@ -39,7 +39,7 @@ export async function info(
   const { mainKeyboardSubGuild, mainKeyboardSubServer, mainKeyboardUnsub } =
     getMainKeyboard(ctx);
 
-  queue.add(
+  add(
     async () =>
       await ctx.reply(i18n.t("other.info"), {
         reply_markup: {
@@ -58,47 +58,47 @@ export async function info(
 export async function subserver(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  queue.add(async () => await ctx.scene.enter("sub-server"));
+  add(async () => await ctx.scene.enter("sub-server"));
 }
 
 export async function subguild(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  queue.add(async () => await ctx.scene.enter("sub-guild"));
+  add(async () => await ctx.scene.enter("sub-guild"));
 }
 
 export async function unsub(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  queue.add(async () => await ctx.scene.enter("unsub"));
+  add(async () => await ctx.scene.enter("unsub"));
 }
 
 export async function searchPlayer(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  queue.add(async () => await ctx.scene.enter("search-player"));
+  add(async () => await ctx.scene.enter("search-player"));
 }
 
 export async function hearsSubOnServer(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  queue.add(async () => await ctx.scene.enter("sub-server"));
+  add(async () => await ctx.scene.enter("sub-server"));
 }
 
 export async function hearsSubOnGuild(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  queue.add(async () => await ctx.scene.enter("sub-guild"));
+  add(async () => await ctx.scene.enter("sub-guild"));
 }
 
 export async function hearsUnsub(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  queue.add(async () => await ctx.scene.enter("unsub"));
+  add(async () => await ctx.scene.enter("unsub"));
 }
 
 export async function hearsSearchPlayer(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  queue.add(async () => await ctx.scene.enter("search-player"));
+  add(async () => await ctx.scene.enter("search-player"));
 }
