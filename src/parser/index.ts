@@ -47,9 +47,10 @@ export const processPlayers = async (): Promise<void> => {
       for (server in candidates) {
         const history = await parseCandidates(server, candidates[server]);
 
-        sendNotifications(server, history);
+        await sendNotifications(server, history);
       }
     }
+    logger.debug("Finished 'processPlayers'");
   } catch (error) {
     logger.error("processPlayers error: ", error);
   }
@@ -86,7 +87,6 @@ const parseCandidates = async (
   candidates: ServerPlayerList,
 ): Promise<History[] | undefined> => {
   try {
-    logger.debug("Started 'parseCandidates' on server " + SERVER_NAMES[server]);
     const serverCandidates = await findPlayersByServer(server);
 
     if (serverCandidates.length != 0) {
@@ -131,8 +131,6 @@ const parseCandidates = async (
 
 const unsubForBlockedUsers =
   (subscribeId: string) => async (error: TelegramError) => {
-    console.log(subscribeId);
-    console.log(error.code);
     if (error.code === 403) {
       await deleteSubscription(subscribeId);
     }
@@ -143,9 +141,6 @@ const sendNotifications = async (
   history?: History[],
 ): Promise<void> => {
   try {
-    logger.debug(
-      "Started 'sendNotifications' on server " + SERVER_NAMES[server],
-    );
     if (history != undefined && history.length > 0) {
       const serverSubscriptions = await getServerSubscriptions(server);
       if (serverSubscriptions && serverSubscriptions.length > 0) {
@@ -153,7 +148,7 @@ const sendNotifications = async (
 
         const parsedHistory = history
           .map((line) =>
-            line.pretty_text ? `❗️${line.pretty_text}` : line.pretty_text,
+            line.pretty_text ? `❗️ ${line.pretty_text}` : line.pretty_text,
           )
           .filter((prettyText) => prettyText)
           .join("\n");
@@ -193,7 +188,7 @@ const sendNotifications = async (
 
           const parsedHistory = shouldBeNotify
             .map((line) =>
-              line.pretty_text ? `❗️${line.pretty_text}` : line.pretty_text,
+              line.pretty_text ? `❗️ ${line.pretty_text}` : line.pretty_text,
             )
             .filter((prettyText) => prettyText)
             .join("\n");

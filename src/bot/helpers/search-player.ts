@@ -14,7 +14,7 @@ import { type InlineKeyboardButton } from "telegraf/typings/core/types/typegram"
 
 const PAGE_LIMIT = 15;
 
-async function sendPlayerList(
+async function getListButtons(
   playerCount: number,
   playerName: string,
   page: number = 1,
@@ -96,7 +96,7 @@ export async function findPlayer(
     );
     const playerCount = await getPlayersCountByName(playerName);
     if (playerCount > 0) {
-      const buttons = await sendPlayerList(playerCount, playerName, page);
+      const buttons = await getListButtons(playerCount, playerName, page);
       const players = await findPlayersByName(playerName, PAGE_LIMIT, page);
       const parsedPlayers = parseText(players, playerName, playerCount);
 
@@ -137,17 +137,17 @@ export async function findPlayer(
 export async function sendAnotherPage(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  const server =
+  const callbackQuery =
     ctx.callbackQuery != undefined && "data" in ctx.callbackQuery
       ? ctx.callbackQuery?.data
       : "";
-  const [, pageString, ...playerString] = server.split(":");
+  const [, pageString, ...playerString] = callbackQuery.split(":");
   const page = Number(pageString);
   const playerName = playerString.join(":");
 
   logger.debugWithCtx(ctx, `Looking for player "${playerName}", page ${page}`);
   const playerCount = await getPlayersCountByName(playerName);
-  const buttons = await sendPlayerList(playerCount, playerName, page);
+  const buttons = await getListButtons(playerCount, playerName, page);
   const players = await findPlayersByName(playerName, PAGE_LIMIT, page);
   const parsedPlayers = parseText(players, playerName, playerCount);
 

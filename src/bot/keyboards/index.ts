@@ -11,9 +11,10 @@ export const getMainKeyboard = (
   const mainKeyboardSubServer = i18n.t("keyboards.main.sub_server");
   const mainKeyboardUnsub = i18n.t("keyboards.main.unsub");
   const mainKeyboardSearchPlayer = i18n.t("keyboards.main.search_player");
+  const mainKeyboardHistory = i18n.t("keyboards.main.history");
   const mainKeyboard = Markup.keyboard([
     [mainKeyboardSubGuild, mainKeyboardSubServer],
-    [mainKeyboardUnsub],
+    [mainKeyboardHistory, mainKeyboardUnsub],
     [mainKeyboardSearchPlayer],
   ])
     .oneTime()
@@ -24,6 +25,8 @@ export const getMainKeyboard = (
     mainKeyboardSubGuild,
     mainKeyboardSubServer,
     mainKeyboardUnsub,
+    mainKeyboardSearchPlayer,
+    mainKeyboardHistory,
     mainKeyboard,
   };
 };
@@ -31,12 +34,14 @@ export const getMainKeyboard = (
 export const getBackKeyboard = (
   ctx?: Scenes.SceneContext<SceneSessionData>,
 ) => {
-  const backKeyboardBack = i18n.t("keyboards.back.back");
-  const backKeyboard = Markup.keyboard([backKeyboardBack]).resize();
+  const back = i18n.t("keyboards.back.back");
+  const backButton = Markup.button.callback(back, "back");
+  const backKeyboard = Markup.keyboard([backButton]).resize();
 
   return {
+    back,
+    backButton,
     backKeyboard,
-    backKeyboardBack,
   };
 };
 

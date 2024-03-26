@@ -18,10 +18,12 @@ export async function useRouting(
   bot.command("subguild", subguild);
   bot.command("unsub", unsub);
   bot.command("search_player", searchPlayer);
+  bot.command("history", history);
   bot.hears(/(.*Подписаться на сервер)/, hearsSubOnServer);
   bot.hears(/(.*Подписаться на гильдию)/, hearsSubOnGuild);
   bot.hears(/(.*Отписаться от уведомлений)/, hearsUnsub);
   bot.hears(/(.*Поиск игроков)/, hearsSearchPlayer);
+  bot.hears(/(.*История изменений)/, hearsHistory);
   bot.action(/go_to_menu/, leaveToMainScene);
 }
 
@@ -79,6 +81,12 @@ export async function searchPlayer(
   add(async () => await ctx.scene.enter("search-player"));
 }
 
+export async function history(
+  ctx: Scenes.SceneContext<SceneSessionData>,
+): Promise<void> {
+  add(async () => await ctx.scene.enter("history"));
+}
+
 export async function hearsSubOnServer(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
@@ -101,4 +109,10 @@ export async function hearsSearchPlayer(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
   add(async () => await ctx.scene.enter("search-player"));
+}
+
+export async function hearsHistory(
+  ctx: Scenes.SceneContext<SceneSessionData>,
+): Promise<void> {
+  add(async () => await ctx.scene.enter("history"));
 }

@@ -1,11 +1,7 @@
 import { useRouting } from "@bot/commands";
+import { continueScene, type SceneSessionData } from "@bot/helpers";
 import {
-  continueScene,
-  leaveToMainScene,
-  type SceneSessionData,
-} from "@bot/helpers";
-import {
-  getServerListButton,
+  getServerListKeyboard,
   muteSubscribe,
   subscribeOnServer,
 } from "@bot/helpers/sub-server";
@@ -20,8 +16,9 @@ const subServerScene = new Scenes.BaseScene<
 
 subServerScene.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   logger.debugWithCtx(ctx, "Enter sub-server scene");
-  const serverListButtons = await getServerListButton(ctx);
+  const serverListButtons = await getServerListKeyboard(ctx);
 
+  add(async () => await ctx.deleteMessage());
   add(async () => {
     const message = await ctx.reply(
       i18n.t("scenes.sub-server.list_of_servers"),
@@ -33,7 +30,6 @@ subServerScene.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
 
 useRouting(subServerScene);
 
-subServerScene.action(/go_to_menu/, leaveToMainScene);
 subServerScene.action(/continue/, continueScene);
 subServerScene.action(/server_/, subscribeOnServer);
 subServerScene.action(/mute_/, muteSubscribe);

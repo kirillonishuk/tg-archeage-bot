@@ -7,6 +7,7 @@ import { Scenes, session, Telegraf, type TelegramError } from "telegraf";
 
 import { useRouting } from "./commands";
 import { getMainKeyboard } from "./keyboards";
+import historyScene from "./scenes/history";
 import searchPlayerScene from "./scenes/search-player";
 import subGuildScene from "./scenes/sub-guild";
 import subServerScene from "./scenes/sub-server";
@@ -19,7 +20,9 @@ const stage = new Scenes.Stage<Scenes.SceneContext<SceneSessionData>>([
   subGuildScene,
   unsubScene,
   searchPlayerScene,
+  historyScene,
 ]);
+
 bot.use(session());
 bot.use(stage.middleware());
 useRouting(bot);

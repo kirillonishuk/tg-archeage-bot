@@ -1,4 +1,4 @@
-import { type SceneSessionData } from "@bot/helpers";
+import { type SceneSessionData, splitArrayToMatrix } from "@bot/helpers";
 import { geContinueKeyboard, getBackToMenuKeyboard } from "@bot/keyboards";
 import { SERVER_NAMES } from "@configs/archeage";
 import i18n from "@i18n/i18n";
@@ -13,9 +13,7 @@ import { type Types } from "mongoose";
 import { Markup, type Scenes } from "telegraf";
 import { type InlineKeyboardMarkup } from "telegraf/typings/core/types/typegram";
 
-import { splitArrayToMatrix } from ".";
-
-export async function getServerListButton(
+export async function getServerListKeyboard(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<Markup.Markup<InlineKeyboardMarkup>> {
   const userSubscriptions = await getUserServersSubscriptions(ctx.from?.id);
@@ -73,7 +71,7 @@ export async function subscribeOnServer(
     ctx.from?.id,
     serverNumber,
   );
-  const serverButtons = await getServerListButton(ctx);
+  const serverButtons = await getServerListKeyboard(ctx);
 
   if (typeof userSubscription === "string") {
     if (
@@ -124,7 +122,7 @@ export async function muteSubscribe(
   const subscribeId = subscribeIdString.replace(/mute_/i, "");
   const updateResult = await muteSubscription(subscribeId);
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
-  const serverButtons = await getServerListButton(ctx);
+  const serverButtons = await getServerListKeyboard(ctx);
 
   if (updateResult === undefined || updateResult == null) {
     add(

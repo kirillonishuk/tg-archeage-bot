@@ -8,6 +8,7 @@ export function scheduleFunction(cb: () => void): void {
 
   cb();
   setTimeout(() => {
+    cb();
     setInterval(cb, UPDATE_INTERVAL * 60 * 1000);
   }, millisecondsUntilNextCall);
 }
