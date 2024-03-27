@@ -18,9 +18,9 @@ export function shouldResetScore(): boolean {
   const warningDate = getLastThursdayOfMonth();
   const curDate = moment().utcOffset(180).get("date");
   const curHours = moment().utcOffset(180).get("hours");
-  // const curMinutes = moment().get("minutes");
+  const curMinutes = moment().utcOffset(180).get("minutes");
 
-  if (warningDate === curDate && curHours === 2) {
+  if (warningDate === curDate && curHours === 1 && curMinutes < 10) {
     return true;
   }
   return false;
