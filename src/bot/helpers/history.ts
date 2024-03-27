@@ -78,8 +78,13 @@ export async function sendServerList(
 ): Promise<void> {
   logger.debugWithCtx(ctx, "Enter history scene");
   const serverListButtons = await getServerListKeyboard(ctx);
-
-  add(async () => await ctx.deleteMessage());
+  const callbackQuery =
+    ctx.callbackQuery != undefined && "data" in ctx.callbackQuery
+      ? ctx.callbackQuery?.data
+      : "";
+  if (callbackQuery) {
+    add(async () => await ctx.deleteMessage());
+  }
   add(
     async () =>
       await ctx.reply(

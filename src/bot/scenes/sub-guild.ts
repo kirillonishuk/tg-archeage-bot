@@ -19,7 +19,6 @@ subGuildScene.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   logger.debugWithCtx(ctx, "Enter sub-guild scene");
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard();
 
-  add(async () => await ctx.deleteMessage());
   add(async () => {
     const message = await ctx.reply(
       i18n.t("scenes.sub-guild.start"),

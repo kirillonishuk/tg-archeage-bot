@@ -18,7 +18,6 @@ subServerScene.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   logger.debugWithCtx(ctx, "Enter sub-server scene");
   const serverListButtons = await getServerListKeyboard(ctx);
 
-  add(async () => await ctx.deleteMessage());
   add(async () => {
     const message = await ctx.reply(
       i18n.t("scenes.sub-server.list_of_servers"),

@@ -17,7 +17,6 @@ unsubScene.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
 
   const subscriptionListButtons = await getSubscriptionButtons(ctx);
 
-  add(async () => await ctx.deleteMessage());
   if (subscriptionListButtons != null) {
     add(async () => {
       const message = await ctx.reply(
