@@ -135,7 +135,7 @@ export async function muteSubscribe(
   } else {
     logger.debugWithCtx(
       ctx,
-      `Subscribed on server ${SERVER_NAMES[updateResult.server]} muted, id: ${updateResult._id}`,
+      `Muted subscribed on server "${SERVER_NAMES[updateResult.server]}", id: ${updateResult._id}`,
     );
     add(
       async () =>

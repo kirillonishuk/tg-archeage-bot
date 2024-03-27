@@ -58,7 +58,11 @@ export function compareCharacters(
 
   for (const player of prev) {
     const updatedPlayer = next.find((char) => char.name === player.name);
-    if (updatedPlayer === undefined && player.num < 500) {
+    if (
+      updatedPlayer === undefined &&
+      player.num < 500 &&
+      player.score !== "0"
+    ) {
       const changes: History = {
         name: player.name,
         guild: player.guild,

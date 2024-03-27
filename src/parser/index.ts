@@ -17,6 +17,7 @@ import { saveHistory } from "@services/history.service";
 import {
   deletePlayers,
   findPlayersByServer,
+  resetPlayersScore,
   saveNewPlayers,
   savePlayers,
   updatePlayers,
@@ -30,6 +31,7 @@ import {
 import { compareCharacters, splitCandidatesByFractions } from "@utils/compare";
 import logger from "@utils/logger";
 import { prettyText } from "@utils/pretty";
+import { shouldResetScore } from "@utils/time";
 import i18next from "i18next";
 import moment from "moment";
 import fetch from "node-fetch";
@@ -44,10 +46,16 @@ export const processPlayers = async (): Promise<void> => {
 
     if (candidates != undefined && typeof candidates !== "string") {
       let server: keyof GamePlayerList;
-      for (server in candidates) {
-        const history = await parseCandidates(server, candidates[server]);
 
-        await sendNotifications(server, history);
+      if (shouldResetScore()) {
+        logger.debug("Reset all score");
+        await resetPlayersScore();
+      } else {
+        logger.debug("Compare players changes");
+        for (server in candidates) {
+          const history = await parseCandidates(server, candidates[server]);
+          await sendNotifications(server, history);
+        }
       }
     }
     logger.debug("Finished 'processPlayers'");
@@ -58,7 +66,6 @@ export const processPlayers = async (): Promise<void> => {
 
 const fetchPlayers = async (): Promise<GamePlayerList | string | undefined> => {
   try {
-    logger.debug("Started 'fetchPlayers'");
     const response = await fetch(URL_PLAYER_LIST, {
       method: "GET",
       headers: {

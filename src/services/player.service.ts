@@ -100,6 +100,16 @@ export const updatePlayersScore = async (players: Player[]): Promise<any> => {
   return await Promise.all(promiseList);
 };
 
+export const resetPlayersScore = async (): Promise<any> => {
+  return await player.updateMany(
+    {},
+    {
+      score: "0",
+      num: 0,
+    },
+  );
+};
+
 export const deletePlayers = async (players: Player[]): Promise<any> => {
   const playerdId = players.map((player) => player._id);
 

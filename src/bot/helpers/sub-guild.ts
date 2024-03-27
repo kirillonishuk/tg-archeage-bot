@@ -231,7 +231,7 @@ export async function muteSubscribe(
   } else {
     logger.debugWithCtx(
       ctx,
-      `Subscribed on guild "${updateResult.guild} server ${SERVER_NAMES[updateResult.server]}" muted, id: ${updateResult._id}`,
+      `Muted subscribed on guild "${updateResult.guild} server ${SERVER_NAMES[updateResult.server]}", id: ${updateResult._id}`,
     );
     const guildButtons = await processGuildButtons(
       ctx,
