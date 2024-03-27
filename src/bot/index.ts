@@ -46,12 +46,14 @@ export async function launchBot(): Promise<void> {
 
 export async function sendMessage(
   chatId: number | string,
-  message: string,
+  messages: string[],
   options?: any,
   errorCb?: (error: TelegramError) => Promise<any>,
 ): Promise<void> {
-  add(
-    async () => await bot.telegram.sendMessage(chatId, message, options),
-    async (error) => errorCb && (await errorCb(error)),
-  );
+  for (const message of messages) {
+    add(
+      async () => await bot.telegram.sendMessage(chatId, message, options),
+      async (error) => errorCb && (await errorCb(error)),
+    );
+  }
 }

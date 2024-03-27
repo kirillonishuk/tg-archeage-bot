@@ -15,13 +15,24 @@ export function getLastThursdayOfMonth(): number {
 }
 
 export function shouldResetScore(): boolean {
-  // const warningDate = getLastThursdayOfMonth();
-  // const curDate = moment().get("date");
-  // const curHours = moment().get("hours");
+  const warningDate = getLastThursdayOfMonth();
+  const curDate = moment().get("date");
+  const curHours = moment().get("hours");
   // const curMinutes = moment().get("minutes");
 
-  // if (warningDate === curDate && curHours < 1 && curMinutes <= 15) {
-  //   return true;
-  // }
+  if (warningDate === curDate && curHours === 2) {
+    return true;
+  }
   return false;
+}
+
+export function shouldSendUpdates(): boolean {
+  const warningDate = getLastThursdayOfMonth();
+  const curDate = moment().get("date");
+  const curHours = moment().get("hours");
+
+  if (warningDate === curDate && curHours <= 12) {
+    return false;
+  }
+  return true;
 }

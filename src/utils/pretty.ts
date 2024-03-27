@@ -31,7 +31,7 @@ export const prettyText = (changes: History[]): History[] => {
       }
       return {
         ...player,
-        pretty_text: `<u>${player.name}(${player.score} военки)</u> ${action}.`,
+        pretty_text: `<u><b>${player.name}</b></u>(${player.score} военки) ${action}`,
       };
     });
 };

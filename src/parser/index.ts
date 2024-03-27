@@ -31,13 +31,15 @@ import {
 import { compareCharacters, splitCandidatesByFractions } from "@utils/compare";
 import logger from "@utils/logger";
 import { prettyText } from "@utils/pretty";
-import { shouldResetScore } from "@utils/time";
+import { shouldResetScore, shouldSendUpdates } from "@utils/time";
 import i18next from "i18next";
 import moment from "moment";
 import fetch from "node-fetch";
 import { type TelegramError } from "telegraf";
 
 moment.locale(LOCALE);
+
+const LINES_IN_MESSAGE = 20;
 
 export const processPlayers = async (): Promise<void> => {
   try {
@@ -50,10 +52,12 @@ export const processPlayers = async (): Promise<void> => {
       if (shouldResetScore()) {
         logger.debug("Reset all score");
         await resetPlayersScore();
-      } else {
-        logger.debug("Compare players changes");
-        for (server in candidates) {
-          const history = await parseCandidates(server, candidates[server]);
+      }
+      logger.debug("Compare players changes");
+      logger.debug(`Send notifications ${shouldSendUpdates()}`);
+      for (server in candidates) {
+        const history = await parseCandidates(server, candidates[server]);
+        if (shouldSendUpdates()) {
           await sendNotifications(server, history);
         }
       }
@@ -98,21 +102,27 @@ const parseCandidates = async (
 
     if (serverCandidates.length != 0) {
       let [pirates, west, east] = splitCandidatesByFractions(candidates);
-      pirates = pirates.map((player) => ({
-        ...player,
-        fraction: FRACTION_NAME_CODES.Pirates,
-        server,
-      }));
-      west = west.map((player) => ({
-        ...player,
-        fraction: FRACTION_NAME_CODES.West,
-        server,
-      }));
-      east = east.map((player) => ({
-        ...player,
-        fraction: FRACTION_NAME_CODES.East,
-        server,
-      }));
+      pirates = pirates
+        ? pirates.map((player) => ({
+            ...player,
+            fraction: FRACTION_NAME_CODES.Pirates,
+            server,
+          }))
+        : [];
+      west = west
+        ? west.map((player) => ({
+            ...player,
+            fraction: FRACTION_NAME_CODES.West,
+            server,
+          }))
+        : [];
+      east = east
+        ? east.map((player) => ({
+            ...player,
+            fraction: FRACTION_NAME_CODES.East,
+            server,
+          }))
+        : [];
 
       const players = pirates.concat(west, east);
 
@@ -149,25 +159,46 @@ const sendNotifications = async (
 ): Promise<void> => {
   try {
     if (history != undefined && history.length > 0) {
+      const availableHistory = history
+        .sort((a, b) => Number(b.score) - Number(a.score))
+        .map((line) =>
+          line.pretty_text ? `❗️ ${line.pretty_text}` : line.pretty_text,
+        )
+        .filter((prettyText) => prettyText);
+
       const serverSubscriptions = await getServerSubscriptions(server);
       if (serverSubscriptions && serverSubscriptions.length > 0) {
-        const header = `🌐<b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>🌐\n\n`;
+        let notificationText: string[] = [];
+        if (availableHistory.length > LINES_IN_MESSAGE) {
+          for (
+            let index = 0, path = 1;
+            index < availableHistory.length;
+            index += LINES_IN_MESSAGE, path++
+          ) {
+            const header = `🌐 <b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${i18next.t("notification.path")} ${path} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>`;
 
-        const parsedHistory = history
-          .map((line) =>
-            line.pretty_text ? `❗️ ${line.pretty_text}` : line.pretty_text,
-          )
-          .filter((prettyText) => prettyText)
-          .join("\n");
+            const parsedHistory = availableHistory
+              .slice(index, index + LINES_IN_MESSAGE)
+              .join("\n");
+
+            notificationText.push(header + parsedHistory);
+          }
+        } else {
+          const header = `🌐 <b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>`;
+
+          const parsedHistory = availableHistory.join("\n");
+
+          notificationText.push(header + parsedHistory);
+        }
+
         const notificationOptions = {
           parse_mode: "HTML",
           disable_notification: false,
         };
-        let notificationText = header + parsedHistory;
         for (const subscription of serverSubscriptions) {
           if (subscription.muted) {
             notificationOptions.disable_notification = true;
-            notificationText = "🔕 " + notificationText;
+            notificationText = notificationText.map((text) => "🔕 " + text);
           }
 
           await sendMessage(
@@ -182,28 +213,49 @@ const sendNotifications = async (
       const guildSubscriptions = await getServerGuildSubscriptions(server);
       if (guildSubscriptions && guildSubscriptions.length > 0) {
         for (const subscription of guildSubscriptions) {
-          const shouldBeNotify = history.filter(
-            (line) =>
-              line.prev_guild === subscription.guild ||
-              line.guild === subscription.guild,
-          );
+          const shouldBeNotify = history
+            .filter(
+              (line) =>
+                line.prev_guild === subscription.guild ||
+                line.guild === subscription.guild,
+            )
+            .sort((a, b) => Number(b.score) - Number(a.score))
+            .map((line) =>
+              line.pretty_text ? `❗️ ${line.pretty_text}` : line.pretty_text,
+            )
+            .filter((prettyText) => prettyText);
+
           if (!shouldBeNotify.length) {
             continue;
           }
           const muteEmoji = subscription.muted ? "🔕 " : "";
-          const header = `👑<b>${i18next.t("notification.guild-header")} <i>${subscription.guild} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>👑\n\n`;
+          const notificationText: string[] = [];
+          if (shouldBeNotify.length > LINES_IN_MESSAGE) {
+            for (
+              let index = 0, path = 1;
+              index < shouldBeNotify.length;
+              index += 20, path++
+            ) {
+              const header = `👑 <b>${i18next.t("notification.guild-header")} <i>${subscription.guild} ${i18next.t("notification.path")} ${path} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
 
-          const parsedHistory = shouldBeNotify
-            .map((line) =>
-              line.pretty_text ? `❗️ ${line.pretty_text}` : line.pretty_text,
-            )
-            .filter((prettyText) => prettyText)
-            .join("\n");
+              const parsedHistory = shouldBeNotify
+                .slice(index, index + LINES_IN_MESSAGE)
+                .join("\n");
+
+              notificationText.push(muteEmoji + header + parsedHistory);
+            }
+          } else {
+            const header = `👑 <b>${i18next.t("notification.guild-header")} <i>${subscription.guild} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
+
+            const parsedHistory = shouldBeNotify.join("\n");
+
+            notificationText.push(muteEmoji + header + parsedHistory);
+          }
+
           const notificationOptions = {
             parse_mode: "HTML",
             disable_notification: subscription.muted,
           };
-          const notificationText = muteEmoji + header + parsedHistory;
 
           await sendMessage(
             subscription.user_id,

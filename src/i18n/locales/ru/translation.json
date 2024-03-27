@@ -81,6 +81,7 @@
   },
   "notification": {
     "server-header": "Изменения на сервере",
-    "guild-header": "Изменения в гильдии"
+    "guild-header": "Изменения в гильдии",
+    "path": "Часть"
   }
 }
