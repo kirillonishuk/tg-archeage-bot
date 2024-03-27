@@ -1,10 +1,10 @@
 import moment from "moment";
 
 export function getLastThursdayOfMonth(): number {
-  const year = moment().year();
-  const month = moment().month();
+  const year = moment().utcOffset(180).year();
+  const month = moment().utcOffset(180).month();
 
-  const lastDayOfMonth = moment().year(year).month(month).endOf("month");
+  const lastDayOfMonth = moment().utcOffset(180).year(year).month(month).endOf("month");
 
   const dayOfWeek = lastDayOfMonth.day();
 
@@ -16,8 +16,8 @@ export function getLastThursdayOfMonth(): number {
 
 export function shouldResetScore(): boolean {
   const warningDate = getLastThursdayOfMonth();
-  const curDate = moment().get("date");
-  const curHours = moment().get("hours");
+  const curDate = moment().utcOffset(180).get("date");
+  const curHours = moment().utcOffset(180).get("hours");
   // const curMinutes = moment().get("minutes");
 
   if (warningDate === curDate && curHours === 2) {
@@ -28,8 +28,8 @@ export function shouldResetScore(): boolean {
 
 export function shouldSendUpdates(): boolean {
   const warningDate = getLastThursdayOfMonth();
-  const curDate = moment().get("date");
-  const curHours = moment().get("hours");
+  const curDate = moment().utcOffset(180).get("date");
+  const curHours = moment().utcOffset(180).get("hours");
 
   if (warningDate === curDate && curHours <= 12) {
     return false;
