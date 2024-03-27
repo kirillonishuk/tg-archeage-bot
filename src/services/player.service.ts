@@ -119,7 +119,10 @@ export const deletePlayers = async (players: Player[]): Promise<any> => {
 export const findPlayersByGuildName = async (
   guild: string,
 ): Promise<Player[]> => {
-  const users: Player[] = await player.find({ guild: new RegExp(guild, "i") });
+  const users: Player[] = await player.find({
+    guild: new RegExp(guild, "i"),
+    score: { $ne: "0" },
+  });
 
   return users;
 };
@@ -130,7 +133,7 @@ export const findPlayersByName = async (
   page: number = 14,
 ): Promise<Player[]> => {
   const users: Player[] = await player
-    .find({ name: new RegExp(name, "i") })
+    .find({ name: new RegExp(name, "i"), score: { $ne: "0" } })
     .limit(limit)
     .skip((page - 1) * limit)
     .sort({ createdAt: -1 });
@@ -140,7 +143,7 @@ export const findPlayersByName = async (
 
 export const getPlayersCountByName = async (name: string): Promise<number> => {
   const count: number = await player
-    .find({ name: new RegExp(name, "i") })
+    .find({ name: new RegExp(name, "i"), score: { $ne: "0" } })
     .countDocuments();
 
   return count;
