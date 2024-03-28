@@ -4,7 +4,11 @@ export function getLastThursdayOfMonth(): number {
   const year = moment().utcOffset(180).year();
   const month = moment().utcOffset(180).month();
 
-  const lastDayOfMonth = moment().utcOffset(180).year(year).month(month).endOf("month");
+  const lastDayOfMonth = moment()
+    .utcOffset(180)
+    .year(year)
+    .month(month)
+    .endOf("month");
 
   const dayOfWeek = lastDayOfMonth.day();
 

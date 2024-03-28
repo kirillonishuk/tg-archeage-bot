@@ -5,6 +5,7 @@ import add from "@utils/p-queue";
 import { type Scenes, type Telegraf } from "telegraf";
 
 import { leaveToMainScene } from "../helpers";
+import { sorryMessage } from "../index";
 import { getMainKeyboard } from "../keyboards";
 
 export async function useRouting(
@@ -19,6 +20,7 @@ export async function useRouting(
   bot.command("unsub", unsub);
   bot.command("search_player", searchPlayer);
   bot.command("history", history);
+  bot.command("sorry_for_spam", sorry);
   bot.hears(/(.*Подписаться на сервер)/, hearsSubOnServer);
   bot.hears(/(.*Подписаться на гильдию)/, hearsSubOnGuild);
   bot.hears(/(.*Отписаться от уведомлений)/, hearsUnsub);
@@ -85,6 +87,14 @@ export async function history(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
   add(async () => await ctx.scene.enter("history"));
+}
+
+export async function sorry(
+  ctx: Scenes.SceneContext<SceneSessionData>,
+): Promise<void> {
+  if (ctx.message?.from.id === 509210633) {
+    await sorryMessage();
+  }
 }
 
 export async function hearsSubOnServer(

@@ -179,3 +179,12 @@ export const getServerGuildSubscriptions = async (
     throw error;
   }
 };
+
+export const getSubscriptions = async (): Promise<Subscription[] | null> => {
+  try {
+    return await SubscriptionModel.find({});
+  } catch (error) {
+    console.log('Error in "getServerSubscriptions"', error);
+    throw error;
+  }
+};
