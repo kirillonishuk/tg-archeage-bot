@@ -18,15 +18,16 @@ unsubScene.enter(async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   const subscriptionListButtons = await getSubscriptionButtons(ctx);
 
   if (subscriptionListButtons != null) {
-    add(async () => {
+    await add(async () => {
       const message = await ctx.reply(
         i18n.t("scenes.unsub.list_of_subs"),
         subscriptionListButtons,
       );
       ctx.scene.session.state.messageId = message.message_id;
+      return message;
     });
   } else {
-    add(
+    await add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.unsub.empty_list"),

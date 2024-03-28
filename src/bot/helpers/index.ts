@@ -33,21 +33,21 @@ export function splitArrayToMatrix(
 export const leaveToMainScene = async (
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> => {
-  await add(async () => {
-    await ctx.deleteMessage();
-  });
-  await add(async () => {
+  await await add(async () => await ctx.deleteMessage());
+  await await add(async () => {
     await ctx.scene.leave();
   });
   const { mainKeyboard } = getMainKeyboard(ctx);
 
-  add(async () => await ctx.reply(i18n.t("scenes.main.message"), mainKeyboard));
+  await add(
+    async () => await ctx.reply(i18n.t("scenes.main.message"), mainKeyboard),
+  );
 };
 
 export const continueScene = async (
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> => {
-  add(
+  await add(
     async () => await ctx.deleteMessage(ctx.callbackQuery?.message?.message_id),
   );
 };

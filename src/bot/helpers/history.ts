@@ -83,9 +83,9 @@ export async function sendServerList(
       ? ctx.callbackQuery?.data
       : "";
   if (callbackQuery) {
-    add(async () => await ctx.deleteMessage());
+    await add(async () => await ctx.deleteMessage());
   }
-  add(
+  await add(
     async () =>
       await ctx.reply(
         i18n.t("scenes.history.list_of_servers"),
@@ -119,7 +119,7 @@ export async function getHistory(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
-  add(async () => await ctx.deleteMessage());
+  await add(async () => await ctx.deleteMessage());
 
   const callbackQuery =
     ctx.callbackQuery != undefined && "data" in ctx.callbackQuery
@@ -138,7 +138,7 @@ export async function getHistory(
     const history = await findHistoryByServer(server, PAGE_LIMIT, page);
     const parsedHistory = parseHistory(history, server);
 
-    add(
+    await add(
       async () =>
         await ctx.reply(parsedHistory, {
           parse_mode: "HTML",
@@ -148,7 +148,7 @@ export async function getHistory(
         }),
     );
   } else {
-    add(
+    await add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.history.not-found"),
@@ -177,7 +177,7 @@ export async function sendAnotherPage(
   const history = await findHistoryByServer(server, PAGE_LIMIT, page);
   const parsedHistory = parseHistory(history, server);
 
-  add(
+  await add(
     async () =>
       await ctx.editMessageText(parsedHistory, {
         parse_mode: "HTML",

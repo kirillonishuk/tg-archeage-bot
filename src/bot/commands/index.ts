@@ -5,7 +5,7 @@ import add from "@utils/p-queue";
 import { type Scenes, type Telegraf } from "telegraf";
 
 import { leaveToMainScene } from "../helpers";
-import { sorryMessage } from "../index";
+import { notifiMessage } from "../index";
 import { getMainKeyboard } from "../keyboards";
 
 export async function useRouting(
@@ -20,7 +20,7 @@ export async function useRouting(
   bot.command("unsub", unsub);
   bot.command("search_player", searchPlayer);
   bot.command("history", history);
-  bot.command("sorry_for_spam", sorry);
+  bot.command("admin_notification", adminNotificator);
   bot.hears(/(.*Подписаться на сервер)/, hearsSubOnServer);
   bot.hears(/(.*Подписаться на гильдию)/, hearsSubOnGuild);
   bot.hears(/(.*Отписаться от уведомлений)/, hearsUnsub);
@@ -33,7 +33,7 @@ export async function start(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
   const { mainKeyboard } = getMainKeyboard(ctx);
-  add(async () => await ctx.reply(i18n.t("other.start"), mainKeyboard));
+  await add(async () => await ctx.reply(i18n.t("other.start"), mainKeyboard));
 }
 
 export async function info(
@@ -43,7 +43,7 @@ export async function info(
   const { mainKeyboardSubGuild, mainKeyboardSubServer, mainKeyboardUnsub } =
     getMainKeyboard(ctx);
 
-  add(
+  await add(
     async () =>
       await ctx.reply(i18n.t("other.info"), {
         reply_markup: {
@@ -62,67 +62,67 @@ export async function info(
 export async function subserver(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  add(async () => await ctx.scene.enter("sub-server"));
+  await add(async () => await ctx.scene.enter("sub-server"));
 }
 
 export async function subguild(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  add(async () => await ctx.scene.enter("sub-guild"));
+  await add(async () => await ctx.scene.enter("sub-guild"));
 }
 
 export async function unsub(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  add(async () => await ctx.scene.enter("unsub"));
+  await add(async () => await ctx.scene.enter("unsub"));
 }
 
 export async function searchPlayer(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  add(async () => await ctx.scene.enter("search-player"));
+  await add(async () => await ctx.scene.enter("search-player"));
 }
 
 export async function history(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  add(async () => await ctx.scene.enter("history"));
+  await add(async () => await ctx.scene.enter("history"));
 }
 
-export async function sorry(
+export async function adminNotificator(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
   if (ctx.message?.from.id === 509210633) {
-    await sorryMessage();
+    await notifiMessage(ctx);
   }
 }
 
 export async function hearsSubOnServer(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  add(async () => await ctx.scene.enter("sub-server"));
+  await add(async () => await ctx.scene.enter("sub-server"));
 }
 
 export async function hearsSubOnGuild(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  add(async () => await ctx.scene.enter("sub-guild"));
+  await add(async () => await ctx.scene.enter("sub-guild"));
 }
 
 export async function hearsUnsub(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  add(async () => await ctx.scene.enter("unsub"));
+  await add(async () => await ctx.scene.enter("unsub"));
 }
 
 export async function hearsSearchPlayer(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  add(async () => await ctx.scene.enter("search-player"));
+  await add(async () => await ctx.scene.enter("search-player"));
 }
 
 export async function hearsHistory(
   ctx: Scenes.SceneContext<SceneSessionData>,
 ): Promise<void> {
-  add(async () => await ctx.scene.enter("history"));
+  await add(async () => await ctx.scene.enter("history"));
 }

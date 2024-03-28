@@ -62,7 +62,7 @@ export async function unsubscribe(
 
     const subscriptionListButtons = await getSubscriptionButtons(ctx);
     if (subscriptionListButtons != null) {
-      add(
+      await add(
         async () =>
           await ctx.telegram.editMessageText(
             ctx.chat?.id,
@@ -73,7 +73,7 @@ export async function unsubscribe(
           ),
       );
     } else {
-      add(
+      await add(
         async () =>
           await ctx.editMessageText(
             i18n.t("scenes.unsub.empty_list"),
@@ -82,7 +82,7 @@ export async function unsubscribe(
       );
     }
   } else {
-    add(
+    await add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.unsub.not_found"),

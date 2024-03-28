@@ -35,7 +35,7 @@ export function shouldSendUpdates(): boolean {
   const curDate = moment().utcOffset(180).get("date");
   const curHours = moment().utcOffset(180).get("hours");
 
-  if (warningDate === curDate && curHours <= 12) {
+  if (warningDate === curDate && curHours <= 15) {
     return false;
   }
   return true;

@@ -4,8 +4,7 @@ import { TelegramError } from "telegraf";
 
 const queue = new PQueue({
   concurrency: 1,
-  interval: 50,
-  intervalCap: 1,
+  timeout: 1000,
 });
 
 export default async function add(

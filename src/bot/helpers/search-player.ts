@@ -76,11 +76,14 @@ export async function findPlayer(
   const { backToMenuInlineKeyboard, backToMenuButton } =
     getBackToMenuKeyboard(ctx);
 
-  add(async () => await ctx.deleteMessage());
-  add(async () => {
+  await add(async () => await ctx.deleteMessage());
+  await add(async () => {
     if (ctx.scene.session.state.messageId !== 0) {
-      await ctx.deleteMessage(ctx.scene.session.state.messageId);
+      const message = await ctx.deleteMessage(
+        ctx.scene.session.state.messageId,
+      );
       ctx.scene.session.state.messageId = 0;
+      return message;
     }
   });
   if (ctx.message != undefined && "text" in ctx.message) {
@@ -100,7 +103,7 @@ export async function findPlayer(
       const players = await findPlayersByName(playerName, PAGE_LIMIT, page);
       const parsedPlayers = parseText(players, playerName, playerCount);
 
-      add(
+      await add(
         async () =>
           await ctx.reply(parsedPlayers, {
             parse_mode: "HTML",
@@ -110,7 +113,7 @@ export async function findPlayer(
           }),
       );
     } else {
-      add(
+      await add(
         async () =>
           await ctx.reply(
             i18n.t("scenes.search-player.not-found", { username: playerName }),
@@ -124,7 +127,7 @@ export async function findPlayer(
       );
     }
   } else {
-    add(
+    await add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.search-player.not-found"),
@@ -151,7 +154,7 @@ export async function sendAnotherPage(
   const players = await findPlayersByName(playerName, PAGE_LIMIT, page);
   const parsedPlayers = parseText(players, playerName, playerCount);
 
-  add(
+  await add(
     async () =>
       await ctx.editMessageText(parsedPlayers, {
         parse_mode: "HTML",

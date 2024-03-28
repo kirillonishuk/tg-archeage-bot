@@ -55,7 +55,7 @@ export async function processGuildButtons(
   const players = await findPlayersByGuildName(guildName);
 
   if (players.length === 0) {
-    add(
+    await add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.sub-guild.guild_not_found"),
@@ -116,11 +116,12 @@ export async function findGuildToSubscribe(
 ): Promise<void> {
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
 
-  add(async () => await ctx.deleteMessage());
-  add(async () => {
+  await add(async () => await ctx.deleteMessage());
+  await add(async () => {
     if (ctx.scene.session.state.messageId !== 0) {
-      await ctx.deleteMessage(ctx.scene.session.state.messageId);
+      const result = await ctx.deleteMessage(ctx.scene.session.state.messageId);
       ctx.scene.session.state.messageId = 0;
+      return result;
     }
   });
   if (ctx.message != undefined && "text" in ctx.message) {
@@ -133,16 +134,17 @@ export async function findGuildToSubscribe(
     const guildButtons = await processGuildButtons(ctx, guildName);
 
     if (guildButtons !== undefined) {
-      add(async () => {
+      await add(async () => {
         const message = await ctx.reply(
           i18n.t("scenes.sub-guild.list_of_guild"),
           guildButtons,
         );
         ctx.scene.session.state.messageId = message.message_id;
+        return message;
       });
     }
   } else {
-    add(
+    await add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.sub-guild.guild_not_found"),
@@ -177,7 +179,7 @@ export async function subscribeOnGuild(
       ctx.callbackQuery.message.text !==
         i18n.t(`scenes.sub-server.${userSubscription}`)
     ) {
-      add(
+      await add(
         async () =>
           await ctx.editMessageText(
             i18n.t(`scenes.sub-guild.${userSubscription}`),
@@ -190,14 +192,14 @@ export async function subscribeOnGuild(
       ctx,
       `Subscribed on guild "${guildName} server ${SERVER_NAMES[serverNumber]}", id: ${userSubscription._id}`,
     );
-    add(
+    await add(
       async () =>
         await ctx.editMessageText(
           i18n.t("scenes.sub-guild.list_of_guild"),
           guildButtons,
         ),
     );
-    add(
+    await add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.sub-guild.subscribed", {
@@ -221,7 +223,7 @@ export async function muteSubscribe(
   const { backToMenuInlineKeyboard } = getBackToMenuKeyboard(ctx);
 
   if (updateResult === undefined || updateResult == null) {
-    add(
+    await add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.other.error_handler"),
@@ -237,11 +239,11 @@ export async function muteSubscribe(
       ctx,
       ctx.scene.session.state.guildName,
     );
-    add(
+    await add(
       async () =>
         await ctx.deleteMessage(ctx.callbackQuery?.message?.message_id),
     );
-    add(
+    await add(
       async () =>
         await ctx.telegram.editMessageText(
           ctx.chat?.id,

@@ -80,7 +80,7 @@ export async function subscribeOnServer(
       ctx.callbackQuery.message.text !==
         i18n.t(`scenes.sub-server.${userSubscription}`)
     ) {
-      add(
+      await add(
         async () =>
           await ctx.editMessageText(
             i18n.t(`scenes.sub-server.${userSubscription}`),
@@ -93,14 +93,14 @@ export async function subscribeOnServer(
       ctx,
       `Subscribed on server "${SERVER_NAMES[serverNumber]}", id: ${userSubscription._id}`,
     );
-    add(
+    await add(
       async () =>
         await ctx.editMessageText(
           i18n.t("scenes.sub-server.list_of_servers"),
           serverButtons,
         ),
     );
-    add(
+    await add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.sub-server.subscribed", {
@@ -125,7 +125,7 @@ export async function muteSubscribe(
   const serverButtons = await getServerListKeyboard(ctx);
 
   if (updateResult === undefined || updateResult == null) {
-    add(
+    await add(
       async () =>
         await ctx.reply(
           i18n.t("scenes.other.error_handler"),
@@ -137,11 +137,11 @@ export async function muteSubscribe(
       ctx,
       `Muted subscribed on server "${SERVER_NAMES[updateResult.server]}", id: ${updateResult._id}`,
     );
-    add(
+    await add(
       async () =>
         await ctx.deleteMessage(ctx.callbackQuery?.message?.message_id),
     );
-    add(
+    await add(
       async () =>
         await ctx.telegram.editMessageText(
           ctx.chat?.id,

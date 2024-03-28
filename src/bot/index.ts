@@ -32,7 +32,7 @@ bot.hears(/(.*?)/, async (ctx: Scenes.SceneContext<SceneSessionData>) => {
   logger.debugWithCtx(ctx, "Default handler has fired");
   const { mainKeyboard } = getMainKeyboard(ctx);
 
-  add(
+  await add(
     async () => await ctx.reply(i18n.t("other.default_handler"), mainKeyboard),
   );
 });
@@ -52,20 +52,21 @@ export async function sendMessage(
   errorCb?: (error: TelegramError) => Promise<any>,
 ): Promise<void> {
   for (const message of messages) {
-    add(
+    await add(
       async () => await bot.telegram.sendMessage(chatId, message, options),
-      async (error) => errorCb && (await errorCb(error)),
+      async (error) => await errorCb?.(error),
     );
   }
 }
 
-export async function sorryMessage(): Promise<void> {
+export async function notifiMessage(
+  ctx: Scenes.SceneContext<SceneSessionData>,
+): Promise<void> {
   let subs: any[] | null = await getSubscriptions();
-  if (subs) {
+  if (subs && "payload" in ctx && typeof ctx.payload === "string") {
+    const message = ctx.payload.trim();
     subs = subs.map((s: any) => s.user_id);
     const ids = new Set(subs);
-
-    const message = `💤 Доброй ночи!\n\nПриношу свои извинения за спам сообщениями от бота(ошибка исправлена и больше не повторится). Проблема возникла из-за сброса военки в игре. В дальнейшем в ночь обнуления бот будет работать в тихом режиме и не отправлять уведомления до 12 утра по МСК, история будет записываться и ее можно посмотреть в соответствуещем меню бота.\n\nP.S.: Еще раз приношу свои извинения, всех благ!\n\nP.P.S.: В сообщениях в спаме инфа неверная, не обращайте на нее внимания!`;
 
     for (const id of ids) {
       await sendMessage(id, [message], {
