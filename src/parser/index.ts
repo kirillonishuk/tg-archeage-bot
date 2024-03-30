@@ -175,7 +175,7 @@ const sendNotifications = async (
             index < availableHistory.length;
             index += LINES_IN_MESSAGE, path++
           ) {
-            const header = `🌐 <b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${i18next.t("notification.path")} ${path} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>`;
+            const header = `🌐 <b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${i18next.t("notification.path")} ${path} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
 
             const parsedHistory = availableHistory
               .slice(index, index + LINES_IN_MESSAGE)
@@ -184,7 +184,7 @@ const sendNotifications = async (
             notificationText.push(header + parsedHistory);
           }
         } else {
-          const header = `🌐 <b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>`;
+          const header = `🌐 <b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
 
           const parsedHistory = availableHistory.join("\n");
 
