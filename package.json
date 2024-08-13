@@ -20,7 +20,7 @@
     "dev": "ts-node src/index.ts",
     "copy-locales": "ncp src/i18n/locales dist/i18n/locales",
     "build": "tsc && npm run copy-locales",
-    "start": "npm run build && node dist/index.js",
+    "start": "npm run build && node dist/index.js --max-old-space-size=1536",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "prettier": "prettier --write \"src/**/*.ts\"",
