@@ -175,7 +175,7 @@ const sendNotifications = async (
             index < availableHistory.length;
             index += LINES_IN_MESSAGE, path++
           ) {
-            const header = `🌐 <b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${i18next.t("notification.path")} ${path} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
+            const header = `<b>${i18next.t("notification.server-header")} #${SERVER_NAMES[server].toLowerCase()}\n<i>${i18next.t("notification.path")} ${path} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
 
             const parsedHistory = availableHistory
               .slice(index, index + LINES_IN_MESSAGE)
@@ -184,7 +184,7 @@ const sendNotifications = async (
             notificationText.push(header + parsedHistory);
           }
         } else {
-          const header = `🌐 <b>${i18next.t("notification.server-header")} <i>${SERVER_NAMES[server]} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
+          const header = `<b>${i18next.t("notification.server-header")} #${SERVER_NAMES[server].toLowerCase()}\n<i>${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
 
           const parsedHistory = availableHistory.join("\n");
 
@@ -236,7 +236,7 @@ const sendNotifications = async (
               index < shouldBeNotify.length;
               index += 20, path++
             ) {
-              const header = `👑 <b>${i18next.t("notification.guild-header")} <i>${subscription.guild} ${i18next.t("notification.path")} ${path} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
+              const header = `<b>${i18next.t("notification.guild-header")} ${i18next.t("notification.server-header")}  #${SERVER_NAMES[server].toLowerCase()} #${subscription.guild?.replace(/ /g, "_")}\n<i>${i18next.t("notification.path")} ${path} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
 
               const parsedHistory = shouldBeNotify
                 .slice(index, index + LINES_IN_MESSAGE)
@@ -245,7 +245,7 @@ const sendNotifications = async (
               notificationText.push(muteEmoji + header + parsedHistory);
             }
           } else {
-            const header = `👑 <b>${i18next.t("notification.guild-header")} <i>${subscription.guild} ${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
+            const header = `<b>${i18next.t("notification.guild-header")} ${i18next.t("notification.server-header")}  #${SERVER_NAMES[server].toLowerCase()} #${subscription.guild?.replace(/ /g, "_")}\n<i>${moment().utcOffset(180).format("HH:mm DD.MM.YY")}:</i></b>\n\n`;
 
             const parsedHistory = shouldBeNotify.join("\n");
 

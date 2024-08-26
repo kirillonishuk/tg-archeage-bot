@@ -80,8 +80,8 @@
     "error_handler": "⛔ Ошибка в работе бота, попробуй позже."
   },
   "notification": {
-    "server-header": "Изменения на сервере",
-    "guild-header": "Изменения в гильдии",
+    "server-header": "#сервер",
+    "guild-header": "#гильдия",
     "path": "Часть"
   }
 }
