@@ -60,7 +60,7 @@ export function compareCharacters(
     const updatedPlayer = next.find((char) => char.name === player.name);
     if (
       updatedPlayer === undefined &&
-      player.num < 400 &&
+      player.num < 540 &&
       player.score !== "0"
     ) {
       const changes: History = {
