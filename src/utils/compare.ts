@@ -1,4 +1,8 @@
-import { FRACTION_NAME_CODES, PLAYER_STATUS } from "@configs/archeage";
+import {
+  FRACTION_NAME_CODES,
+  HISTORY_CHECK_SIZE,
+  PLAYER_STATUS,
+} from "@configs/archeage";
 import { type ServerPlayerList } from "@interfaces/archeage.interface";
 import { type History, type Player } from "@interfaces/player.interface";
 
@@ -60,7 +64,7 @@ export function compareCharacters(
     const updatedPlayer = next.find((char) => char.name === player.name);
     if (
       updatedPlayer === undefined &&
-      player.num < 540 &&
+      player.num < HISTORY_CHECK_SIZE &&
       player.score !== "0"
     ) {
       const changes: History = {
